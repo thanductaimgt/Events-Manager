@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Events Manager</string>
+    <string name="your_events">Sự kiện của bạn</string>
+    <string name="less_than_one_min">(Còn ít hơn 1 phút)</string>
+    <string name="just_happened">(Vừa diễn ra)</string>
+    <string name="remaining_time">(Còn %d %s)</string>
+    <string name="passed_time">(%d %s trước)</string>
+    <string name="remaining_date_time">(Còn %d ngày %d giờ)</string>
+    <string name="passed_date_time">(%d ngày %d giờ trước)</string>
+    <string name="label_hour">giờ</string>
+    <string name="label_date">ngày</string>
+    <string name="label_minute">phút</string>
+    <string name="incoming_event">Sự kiện sắp tới</string>
+    <string name="start">Bắt đầu</string>
+    <string name="end">Kết thúc</string>
+    <string name="title">Tiêu đề</string>
+    <string name="location">Địa điểm</string>
+    <string name="no_title">Không có tiêu đề</string>
+    <string name="refresh">Làm mới danh sách</string>
+</resources>

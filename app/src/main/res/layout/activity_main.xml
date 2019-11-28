@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/shape_round_corners_stroke"
+        android:padding="6dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="21dp"
+        app:layout_constraintEnd_toEndOf="@id/titleTextView"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:listitem="@android:layout/simple_spinner_item" />
+
+    <ImageView
+        android:layout_width="15dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="6dp"
+        android:src="@drawable/expand"
+        app:layout_constraintBottom_toBottomOf="@id/spinner"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@id/spinner"
+        app:layout_constraintTop_toTopOf="@id/spinner" />
+
+    <TextView
+        android:id="@+id/titleTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/shape_round_corners_primary"
+        android:padding="8dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:text="@string/your_events"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/sizeTextTitle"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/spinner" />
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/titleTextView">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/lightWeakGray"
+            android:clipToPadding="false"
+            android:paddingStart="8dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="132dp"
+            tools:listitem="@layout/item_event" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/lightMediumGray"
+        app:layout_constraintTop_toTopOf="@id/swipeRefresh" />
+
+    <ImageView
+        android:id="@+id/refreshImgView"
+        android:layout_width="40dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:contentDescription="@string/refresh"
+        android:src="@drawable/refresh"
+        app:layout_constraintBottom_toTopOf="@id/addEventImgView"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@id/addEventImgView" />
+
+    <ImageView
+        android:id="@+id/addEventImgView"
+        android:layout_width="60dp"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        android:src="@drawable/add"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
