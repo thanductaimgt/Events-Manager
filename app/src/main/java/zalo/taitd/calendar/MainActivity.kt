@@ -2,7 +2,6 @@ package zalo.taitd.calendar
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.ContentUris
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -22,12 +21,17 @@ import io.reactivex.SingleObserver
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
+import zalo.taitd.calendar.models.Event
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     private val compositeDisposable = CompositeDisposable()
     private val adapter = EventAdapter(EventDiffUtil())
     private var curAccountName: String? = null
+    private var curAccountEvents:List<Event> = ArrayList()
+    private var otherAccountsEvents:List<Event> = ArrayList()
+
+    private val permissionsId = arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR, Manifest.permission.RECEIVE_BOOT_COMPLETED)
 
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,12 +39,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         initView()
 
-        if (hasPermissions(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)) {
+        if (hasPermissions(permissionsId)) {
             getData()
         } else {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR),
+                permissionsId,
                 Constants.CALENDAR_PERMISSIONS_REQUEST
             )
         }
@@ -48,13 +52,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun getData() {
         if (curAccountName != null) {
-            CalendarProviderDAO.getEventsAsync(
+            GoogleCalendarDAO.getEventsAsync(
                 this,
                 GetCurAccountEventsObserver(),
                 curAccountName!!
             )
         } else {
-            CalendarProviderDAO.getAccountsAsync(this, GetAccountsObserver())
+            GoogleCalendarDAO.getAccountsAsync(this, GetAccountsObserver())
         }
     }
 
@@ -63,7 +67,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.setItemViewCacheSize(30)
+        recyclerView.setItemViewCacheSize(100)
 
         swipeRefresh.setOnRefreshListener {
             getData()
@@ -71,6 +75,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         initAccountSpinner()
 
+        arrowDownImgView.setOnClickListener(this)
         addEventImgView.setOnClickListener(this)
         refreshImgView.setOnClickListener(this)
     }
@@ -92,9 +97,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     id: Long
                 ) {
                     curAccountName = spinnerAdapter.getItem(position)
-                    Utils.setCurAccount(this@MainActivity, curAccountName!!)
+                    SharePreferenceManager.setCurAccount(this@MainActivity, curAccountName!!)
 
-                    CalendarProviderDAO.getEventsAsync(
+                    GoogleCalendarDAO.getEventsAsync(
                         this@MainActivity,
                         GetCurAccountEventsObserver(),
                         curAccountName!!
@@ -122,19 +127,22 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
             R.id.refreshImgView -> {
                 swipeRefresh.isRefreshing = true
-                CalendarProviderDAO.getEventsAsync(
+                GoogleCalendarDAO.getEventsAsync(
                     this,
                     GetCurAccountEventsObserver(),
                     curAccountName!!
                 )
             }
+            R.id.arrowDownImgView -> recyclerView.scrollToPosition(adapter.currentList.lastIndex)
         }
     }
 
-    private fun createReminders(events: List<Event>) {
-        events.forEach {
-            Utils.createRemindersAsync(this, it, CreateRemindersObserver())
-        }
+    private fun createRemindersForChangedEvents(oldEvents: List<Event>, newEvents: List<Event>) {
+        ReminderManager.createRemindersForChangedEventsAsync(this, oldEvents, newEvents, CreateRemindersObserver())
+    }
+
+    private fun cancelRemindersForDeletedEvents(oldEvents: List<Event>, newEvents: List<Event>){
+        ReminderManager.cancelRemindersForDeletedEventsAsync(this, oldEvents, newEvents, CancelRemindersObserver())
     }
 
     override fun onDestroy() {
@@ -143,8 +151,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun updateAccountList(accountNames: ArrayList<String>) {
-        curAccountName = Utils.getCurAccount(this) ?: accountNames.firstOrNull()
-        Utils.setCurAccount(this@MainActivity, curAccountName!!)
+        curAccountName = SharePreferenceManager.getCurAccount(this) ?: accountNames.firstOrNull()
+        SharePreferenceManager.setCurAccount(this@MainActivity, curAccountName!!)
 
         val spinnerAdapter = (spinner.adapter as AccountSpinnerAdapter)
         spinnerAdapter.clear()
@@ -153,7 +161,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         spinnerAdapter.notifyDataSetChanged()
     }
 
-    private fun hasPermissions(vararg permissionsId: String): Boolean {
+    private fun hasPermissions(permissionsId: Array<String>): Boolean {
         var hasPermissions = true
         for (p in permissionsId) {
             hasPermissions =
@@ -190,6 +198,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         override fun onSuccess(t: List<Event>) {
             Log.d(TAG, "get events of $curAccountName success")
             adapter.submitList(t)
+
+            cancelRemindersForDeletedEvents(curAccountEvents, t)
+            createRemindersForChangedEvents(curAccountEvents, t)
+
+            curAccountEvents = t
+
             swipeRefresh.isRefreshing = false
         }
 
@@ -207,7 +221,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         override fun onSuccess(t: List<Event>) {
             Log.d(TAG, "get other accounts events success")
 
-            createReminders(t)
+            cancelRemindersForDeletedEvents(otherAccountsEvents, t)
+            createRemindersForChangedEvents(otherAccountsEvents, t)
+
+            otherAccountsEvents = t
         }
 
         override fun onSubscribe(d: Disposable) {
@@ -223,7 +240,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         override fun onSuccess(t: ArrayList<String>) {
             this@MainActivity.updateAccountList(t)
 
-            if (t.isNotEmpty()) CalendarProviderDAO.getEventsAsync(
+            if (t.isNotEmpty()) GoogleCalendarDAO.getEventsAsync(
                 this@MainActivity,
                 GetOtherAccountsEventsObserver(),
                 curAccountName!!,
@@ -251,6 +268,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         override fun onError(e: Throwable) {
             e.printStackTrace()
         }
+    }
 
+    inner class CancelRemindersObserver : CompletableObserver {
+        override fun onComplete() {
+        }
+
+        override fun onSubscribe(d: Disposable) {
+            compositeDisposable.add(d)
+        }
+
+        override fun onError(e: Throwable) {
+            e.printStackTrace()
+        }
     }
 }

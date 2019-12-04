@@ -9,11 +9,13 @@ import io.reactivex.Single
 import io.reactivex.SingleObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import zalo.taitd.calendar.models.Event
+import zalo.taitd.calendar.models.Reminder
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 
-object CalendarProviderDAO {
+object GoogleCalendarDAO {
     private val eventProjection: Array<String> = arrayOf(
         CalendarContract.Events._ID,
         CalendarContract.Events.TITLE,
@@ -68,7 +70,7 @@ object CalendarProviderDAO {
     fun getEventsAsync(
         context: Context,
         observer: SingleObserver<List<Event>>,
-        accountName: String,
+        accountName: String?=null,
         doGetOthers: Boolean = false
     ) {
         Single.fromCallable {
@@ -81,14 +83,17 @@ object CalendarProviderDAO {
     @SuppressLint("MissingPermission")
     fun getEventsSync(
         context: Context,
-        accountName: String,
+        accountName: String?=null,
         doGetOthers: Boolean = false
     ): List<Event> {
         // Run query
         val uri: Uri = CalendarContract.Events.CONTENT_URI
-        val selection =
-            "(${CalendarContract.Events.ACCOUNT_NAME} ${if (doGetOthers) "<>" else "="} ?) AND (${CalendarContract.Events.DELETED} = ?)"
-        val selectionArgs = arrayOf(accountName, "0")
+        var selection = "(${CalendarContract.Events.DELETED} = 0)"
+        var selectionArgs:Array<String>? = null
+        if(accountName!=null){
+            selection = "((${CalendarContract.Events.ACCOUNT_NAME} ${if (doGetOthers) "<>" else "="} ?) AND $selection)"
+            selectionArgs = arrayOf(accountName)
+        }
 
         val res = ArrayList<Event>()
         val cursor =
@@ -106,15 +111,16 @@ object CalendarProviderDAO {
             val startTime =
                 Date(cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTSTART)))
             val endTime = Date(cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTEND)))
+            val accountName2 = cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ACCOUNT_NAME))
 
             res.add(
                 Event(
-                    id, title, location, startTime, endTime, accountName
+                    id, title, location, startTime, endTime, accountName2
                 )
             )
         }
         cursor?.close()
-        Log.d(TAG, "calendars: $res")
+        Log.d(TAG, "events: ${res.takeLast(10)}")
 
         return res
     }
@@ -147,7 +153,14 @@ object CalendarProviderDAO {
 
             close()
 
-            res = Event(id, title, location, startTime, endTime, accountName)
+            res = Event(
+                id,
+                title,
+                location,
+                startTime,
+                endTime,
+                accountName
+            )
 
             Log.d(TAG, "event: $res")
 

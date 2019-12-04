@@ -11,6 +11,7 @@ import android.provider.Settings
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import zalo.taitd.calendar.models.Event
 
 
 class NotificationService : IntentService(NotificationService::class.java.simpleName) {
@@ -19,7 +20,7 @@ class NotificationService : IntentService(NotificationService::class.java.simple
             val eventId = intent.getLongExtra(Constants.EVENT_ID, -1)
 
             if (eventId != -1L) {
-                val event = CalendarProviderDAO.getEventSync(this, eventId)
+                val event = GoogleCalendarDAO.getEventSync(this, eventId)
 
                 val uri: Uri =
                     ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId)
@@ -80,19 +81,17 @@ class NotificationService : IntentService(NotificationService::class.java.simple
         val endDateFormat = Utils.getDateFormat(event.startTime)
         val endTimeFormat = Utils.getTimeFormat(event.startTime)
 
-        return "${(if (event.title != "") "${getString(R.string.title)}: ${event.title}" else getString(
-            R.string.no_title
-        ))}\n" +
+        return "${Utils.getDateTimeDiffFormat(this, event.startTime)}\n" +
+                "${(if (event.title != "") "${getString(R.string.title)}: ${event.title}" else getString(
+                    R.string.no_title
+                ))}\n" +
                 "${getString(R.string.start)}: $startTimeFormat - $startDateFormat\n" +
                 "${getString(R.string.end)}: $endTimeFormat - $endDateFormat" +
                 (if (event.location != "") "\n${getString(R.string.location)}: ${event.location}" else "")
     }
 
     private fun getNotificationTitle(event: Event): String {
-        return "${getString(R.string.incoming_event)} ${Utils.getDateTimeDiffFormat(
-            this,
-            event.startTime
-        )}"
+        return getString(R.string.incoming_event)
     }
 
     //helper function to create notification channel, use when start service in foreground

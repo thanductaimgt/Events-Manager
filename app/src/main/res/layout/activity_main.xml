@@ -73,9 +73,21 @@
         android:background="@color/lightMediumGray"
         app:layout_constraintTop_toTopOf="@id/swipeRefresh" />
 
+
+    <ImageView
+        android:id="@+id/arrowDownImgView"
+        android:layout_width="25dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:contentDescription="@string/refresh"
+        android:src="@drawable/arrow_down"
+        app:layout_constraintBottom_toTopOf="@id/refreshImgView"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@id/addEventImgView" />
+
     <ImageView
         android:id="@+id/refreshImgView"
-        android:layout_width="40dp"
+        android:layout_width="30dp"
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
         android:contentDescription="@string/refresh"
@@ -86,9 +98,9 @@
 
     <ImageView
         android:id="@+id/addEventImgView"
-        android:layout_width="60dp"
+        android:layout_width="40dp"
         android:layout_height="0dp"
-        android:layout_margin="16dp"
+        android:layout_margin="8dp"
         android:src="@drawable/add"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:1"

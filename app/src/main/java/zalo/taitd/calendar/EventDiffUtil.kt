@@ -1,6 +1,7 @@
 package zalo.taitd.calendar
 
 import androidx.recyclerview.widget.DiffUtil
+import zalo.taitd.calendar.models.Event
 
 class EventDiffUtil :DiffUtil.ItemCallback<Event>(){
     override fun areItemsTheSame(

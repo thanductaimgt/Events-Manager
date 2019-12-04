@@ -1,4 +1,4 @@
-package zalo.taitd.calendar
+package zalo.taitd.calendar.models
 
 data class Calendar(
     val calID: Long,
