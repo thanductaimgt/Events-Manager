@@ -1,9 +1,10 @@
-package zalo.taitd.calendar
+package zalo.taitd.calendar.utils
 
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.os.Build
+import zalo.taitd.calendar.R
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*

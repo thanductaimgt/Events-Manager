@@ -1,4 +1,4 @@
-package zalo.taitd.calendar
+package zalo.taitd.calendar.adapters
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,7 +6,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_event.view.*
+import zalo.taitd.calendar.R
 import zalo.taitd.calendar.models.Event
+import zalo.taitd.calendar.utils.EventDiffUtil
 import java.text.SimpleDateFormat
 
 class EventAdapter(eventDiffUtil: EventDiffUtil) :

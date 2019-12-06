@@ -1,8 +1,12 @@
 package zalo.taitd.calendar
 
 import android.Manifest
+import android.accounts.Account
+import android.accounts.AccountManager
 import android.annotation.SuppressLint
+import android.content.ContentResolver
 import android.content.ContentUris
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -21,7 +25,14 @@ import io.reactivex.SingleObserver
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
+import zalo.taitd.calendar.adapters.AccountSpinnerAdapter
+import zalo.taitd.calendar.adapters.EventAdapter
+import zalo.taitd.calendar.databases.GoogleCalendarDAO
 import zalo.taitd.calendar.models.Event
+import zalo.taitd.calendar.services.CalendarProviderObserverService
+import zalo.taitd.calendar.utils.Constants
+import zalo.taitd.calendar.utils.EventDiffUtil
+import zalo.taitd.calendar.utils.TAG
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
@@ -31,7 +42,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private var curAccountEvents:List<Event> = ArrayList()
     private var otherAccountsEvents:List<Event> = ArrayList()
 
-    private val permissionsId = arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR, Manifest.permission.RECEIVE_BOOT_COMPLETED)
+    private val permissionsId = arrayOf(
+        Manifest.permission.READ_CALENDAR,
+        Manifest.permission.WRITE_CALENDAR,
+        Manifest.permission.RECEIVE_BOOT_COMPLETED,
+        Manifest.permission.READ_SYNC_SETTINGS,
+        Manifest.permission.WRITE_SYNC_SETTINGS
+    )
 
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,6 +58,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         if (hasPermissions(permissionsId)) {
             getData()
+            initSync()
         } else {
             ActivityCompat.requestPermissions(
                 this,
@@ -48,6 +66,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 Constants.CALENDAR_PERMISSIONS_REQUEST
             )
         }
+    }
+
+    private fun initSync(){
+        createSyncAccount()
+        startService(Intent(this, CalendarProviderObserverService::class.java))
     }
 
     private fun getData() {
@@ -183,6 +206,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             Constants.CALENDAR_PERMISSIONS_REQUEST -> {
                 if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                     getData()
+                    initSync()
                 } else {
                     Log.e(TAG, "request permissions fail")
                     finish()
@@ -281,5 +305,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         override fun onError(e: Throwable) {
             e.printStackTrace()
         }
+    }
+
+    private fun createSyncAccount(): Account {
+        val accountManager = getSystemService(Context.ACCOUNT_SERVICE) as AccountManager
+        accountManager.addAccountExplicitly(Constants.ACCOUNT, null, null)
+        ContentResolver.setSyncAutomatically(Constants.ACCOUNT, Constants.AUTHORITY, true)
+        return Constants.ACCOUNT
     }
 }

@@ -1,4 +1,4 @@
-package zalo.taitd.calendar
+package zalo.taitd.calendar.services
 
 import android.app.*
 import android.content.ContentUris
@@ -11,7 +11,12 @@ import android.provider.Settings
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import zalo.taitd.calendar.R
+import zalo.taitd.calendar.databases.GoogleCalendarDAO
 import zalo.taitd.calendar.models.Event
+import zalo.taitd.calendar.utils.Constants
+import zalo.taitd.calendar.utils.TAG
+import zalo.taitd.calendar.utils.Utils
 
 
 class NotificationService : IntentService(NotificationService::class.java.simpleName) {

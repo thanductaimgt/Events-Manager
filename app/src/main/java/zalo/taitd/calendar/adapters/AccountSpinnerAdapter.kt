@@ -1,4 +1,4 @@
-package zalo.taitd.calendar
+package zalo.taitd.calendar.adapters
 
 import android.content.Context
 import android.graphics.Typeface
@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import zalo.taitd.calendar.R
 
 class AccountSpinnerAdapter(
     context: Context,

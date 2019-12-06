@@ -1,4 +1,4 @@
-package zalo.taitd.calendar
+package zalo.taitd.calendar.databases
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -11,6 +11,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import zalo.taitd.calendar.models.Event
 import zalo.taitd.calendar.models.Reminder
+import zalo.taitd.calendar.utils.TAG
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet

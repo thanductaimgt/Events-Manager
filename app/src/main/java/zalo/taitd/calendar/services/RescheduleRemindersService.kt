@@ -1,11 +1,12 @@
-package zalo.taitd.calendar
+package zalo.taitd.calendar.services
 
 import android.app.IntentService
 import android.content.Intent
-import android.content.Context
 import android.util.Log
-import io.reactivex.Completable
-import io.reactivex.schedulers.Schedulers
+import zalo.taitd.calendar.utils.Constants
+import zalo.taitd.calendar.ReminderManager
+import zalo.taitd.calendar.databases.GoogleCalendarDAO
+import zalo.taitd.calendar.utils.TAG
 
 class RescheduleRemindersService : IntentService("RescheduleRemindersService") {
 

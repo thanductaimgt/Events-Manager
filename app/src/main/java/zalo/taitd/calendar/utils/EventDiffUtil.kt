@@ -1,4 +1,4 @@
-package zalo.taitd.calendar
+package zalo.taitd.calendar.utils
 
 import androidx.recyclerview.widget.DiffUtil
 import zalo.taitd.calendar.models.Event

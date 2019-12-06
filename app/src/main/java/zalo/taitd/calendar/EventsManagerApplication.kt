@@ -2,7 +2,7 @@ package zalo.taitd.calendar
 
 import android.app.Application
 import androidx.room.Room
-import zalo.taitd.calendar.database.EventsManagerDatabase
+import zalo.taitd.calendar.databases.EventsManagerDatabase
 
 class EventsManagerApplication :Application(){
     override fun onCreate() {

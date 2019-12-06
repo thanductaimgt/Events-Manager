@@ -1,4 +1,4 @@
-package zalo.taitd.calendar.database
+package zalo.taitd.calendar.databases
 
 import androidx.room.TypeConverter
 import com.google.gson.Gson
