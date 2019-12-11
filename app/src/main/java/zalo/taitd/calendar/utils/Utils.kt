@@ -1,9 +1,6 @@
 package zalo.taitd.calendar.utils
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
-import android.os.Build
 import zalo.taitd.calendar.R
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -97,22 +94,7 @@ object Utils {
             context.getString(unitResId)
         )
     }
-
-    fun <T> getNoneIntersectElements(list1: List<T>, list2: List<T>): List<T> {
-        val remain1 = list1.toMutableList().apply { removeAll(list2) }
-        val remain2 = list2.toMutableList().apply { removeAll(list1) }
-
-        return remain1.apply { addAll(remain2) }
-    }
 }
 
 val Any.TAG: String
     get() = this::class.java.simpleName
-
-fun AlarmManager.appCompatSet(type: Int, triggerAtMillis: Long, operation: PendingIntent) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-        this.setExact(type, triggerAtMillis, operation)
-    } else {
-        this.set(type, triggerAtMillis, operation)
-    }
-}

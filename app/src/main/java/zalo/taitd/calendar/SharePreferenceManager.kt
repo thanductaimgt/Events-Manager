@@ -6,7 +6,6 @@ import android.content.SharedPreferences
 object SharePreferenceManager {
     private const val SHARE_PREFS_NAME = "Events Manager Share Preferences"
     private const val CUR_ACCOUNT_KEY = "CUR_ACCOUNT_KEY"
-    private const val REMINDERS_ID_KEY = "REMINDERS_ID_KEY"
 
     private fun getPrefs(context: Context):SharedPreferences{
         return context.getSharedPreferences(SHARE_PREFS_NAME, Context.MODE_PRIVATE)
@@ -22,10 +21,5 @@ object SharePreferenceManager {
             getPrefs(context).edit()
         edit.putString(CUR_ACCOUNT_KEY, accountName)
         edit.apply()
-    }
-
-    fun getCreatedRemindersId(context:Context):List<Long>{
-        val prefs = getPrefs(context)
-        return prefs.getStringSet(REMINDERS_ID_KEY, HashSet())!!.map { it.toLong() }
     }
 }

@@ -6,7 +6,7 @@ data class Event(
     val id:Long,
     val title:String,
     val location:String,
-    val startTime:Date,
+    val startTime: Date,
     val endTime:Date,
     val accountName:String
 ){

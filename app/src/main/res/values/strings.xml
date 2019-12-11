@@ -17,4 +17,9 @@
     <string name="location">Địa điểm</string>
     <string name="no_title">Không có tiêu đề</string>
     <string name="refresh">Làm mới danh sách</string>
+
+    <string name="account_name">Dummy Account</string>
+    <string name="account_type">zalo.taitd.calendar</string>
+    <string name="calendar_account_type">com.example</string>
+    <string name="content_authority">com.android.calendar</string>
 </resources>
