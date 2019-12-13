@@ -40,11 +40,23 @@
         android:padding="8dp"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
-        android:text="@string/your_events"
+        android:text="@string/your_calendars"
         android:textColor="@android:color/white"
         android:textSize="@dimen/sizeTextTitle"
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/spinner" />
+
+    <ImageView
+        android:id="@+id/chooseCalendarsImgView"
+        android:padding="4dp"
+        android:layout_marginEnd="4dp"
+        app:layout_constraintBottom_toBottomOf="@id/titleTextView"
+        app:layout_constraintTop_toTopOf="@id/titleTextView"
+        app:layout_constraintEnd_toEndOf="@id/titleTextView"
+        android:src="@drawable/check_list"
+        android:layout_width="30dp"
+        android:layout_height="0dp"
+        app:layout_constraintDimensionRatio="1:1"/>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
@@ -52,7 +64,9 @@
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleTextView">
+        app:layout_constraintTop_toBottomOf="@id/titleTextView"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="0dp">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
@@ -73,6 +87,16 @@
         android:background="@color/lightMediumGray"
         app:layout_constraintTop_toTopOf="@id/swipeRefresh" />
 
+    <ImageView
+        android:id="@+id/arrowUpImgView"
+        android:layout_width="25dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:contentDescription="@string/refresh"
+        android:src="@drawable/arrow_up"
+        app:layout_constraintBottom_toTopOf="@id/arrowDownImgView"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@id/addEventImgView" />
 
     <ImageView
         android:id="@+id/arrowDownImgView"

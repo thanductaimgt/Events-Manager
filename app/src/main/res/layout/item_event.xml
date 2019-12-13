@@ -11,29 +11,54 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingTop="8dp"
         android:paddingBottom="8dp">
 
         <ImageView
             android:id="@+id/titleIcon"
             android:layout_width="20dp"
             android:layout_height="0dp"
-            android:layout_margin="8dp"
+            android:layout_marginStart="8dp"
             android:src="@drawable/title"
             app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:layout_marginEnd="8dp"
-            android:id="@+id/titleTextView"
+            android:id="@+id/titleEditText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/deleteImgView"
             app:layout_constraintStart_toEndOf="@id/titleIcon"
             app:layout_constraintTop_toTopOf="@id/titleIcon"
             tools:text="job fair" />
+
+        <ImageView
+            android:id="@+id/editImgView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@drawable/edit2"
+            app:layout_constraintBottom_toTopOf="@id/deleteImgView"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="@id/deleteImgView"
+            app:layout_constraintStart_toStartOf="@id/deleteImgView" />
+
+        <ImageView
+            android:id="@+id/deleteImgView"
+            android:layout_width="30dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@drawable/delete"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <ImageView
             android:id="@+id/timeIcon"
@@ -43,14 +68,14 @@
             android:src="@drawable/time"
             app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintStart_toStartOf="@id/titleIcon"
-            app:layout_constraintTop_toBottomOf="@id/titleTextView" />
+            app:layout_constraintTop_toBottomOf="@id/titleEditText" />
 
         <TextView
             android:id="@+id/timeTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="@id/titleTextView"
-            app:layout_constraintStart_toStartOf="@id/titleTextView"
+            app:layout_constraintEnd_toEndOf="@id/titleEditText"
+            app:layout_constraintStart_toStartOf="@id/titleEditText"
             app:layout_constraintTop_toTopOf="@id/timeIcon"
             tools:text="8AM - 5PM" />
 
@@ -68,8 +93,8 @@
             android:id="@+id/locationTextView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="@id/titleTextView"
-            app:layout_constraintStart_toStartOf="@id/titleTextView"
+            app:layout_constraintEnd_toEndOf="@id/titleEditText"
+            app:layout_constraintStart_toStartOf="@id/titleEditText"
             app:layout_constraintTop_toTopOf="@id/locationIcon"
             tools:text="Bach Khoa University branch 2, Di An, Binh Duong" />
     </androidx.constraintlayout.widget.ConstraintLayout>

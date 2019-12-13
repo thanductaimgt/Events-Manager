@@ -56,10 +56,15 @@ class EventAdapter(eventDiffUtil: EventDiffUtil) :
             bindTitle(event)
             bindTime(event)
             bindLocation(event)
+
+            itemView.apply {
+                editImgView.setOnClickListener(context as View.OnClickListener)
+                deleteImgView.setOnClickListener(context as View.OnClickListener)
+            }
         }
 
         fun bindTitle(event: Event) {
-            itemView.titleTextView.text =
+            itemView.titleEditText.text =
                 if (event.title != "") event.title else itemView.context.getString(R.string.no_title)
         }
 

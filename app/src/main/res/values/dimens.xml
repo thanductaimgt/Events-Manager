@@ -12,4 +12,5 @@
     <dimen name="sizeTextSmall">11sp</dimen>
     <dimen name="sizeTaskActionButton">32dp</dimen>
     <dimen name="sizeButtonPaddingVertical">12dp</dimen>
+    <dimen name="sizeIconViewEvent">25dp</dimen>
 </resources>

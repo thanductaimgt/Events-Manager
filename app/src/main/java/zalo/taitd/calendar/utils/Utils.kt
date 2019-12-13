@@ -12,7 +12,7 @@ object Utils {
     }
 
     fun getDateFormat(date: Date): String {
-        return SimpleDateFormat.getDateInstance(DateFormat.SHORT).format(date)
+        return SimpleDateFormat.getDateInstance(DateFormat.FULL).format(date)
     }
 
     fun getDateTimeDiffFormat(context: Context, date: Date, now: Date = Date()): String {

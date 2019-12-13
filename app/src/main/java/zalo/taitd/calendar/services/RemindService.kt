@@ -108,7 +108,7 @@ class RemindService : IntentService(RemindService::class.java.simpleName) {
             .setContentIntent(contentIntent)
         val notificationManager =
             this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(event.id.toInt(), builder.build())
+        notificationManager.notify(event.id!!.toInt(), builder.build())
     }
 
     private fun getNotificationContent(event: Event): String {
