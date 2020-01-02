@@ -2,6 +2,7 @@ package zalo.taitd.calendar
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -28,6 +29,7 @@ import zalo.taitd.calendar.utils.Constants
 import zalo.taitd.calendar.utils.EventDiffUtil
 import zalo.taitd.calendar.utils.TAG
 import android.view.MenuItem
+import zalo.taitd.calendar.fragments.ConfirmDeleteEventsDialog
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
@@ -36,8 +38,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var accounts: HashMap<String, Account>
     private var curAccountName: String? = null
     private lateinit var viewEventDialog: ViewEventDialog
-    private lateinit var popupMenu:PopupMenu
-    private var curAccountEvents :List<Event> = ArrayList()
+    private lateinit var popupMenu: PopupMenu
+    private var curAccountEvents: List<Event> = ArrayList()
+    private lateinit var confirmDeleteEventsDialog: ConfirmDeleteEventsDialog
 
     private val permissionsId = arrayOf(
         Manifest.permission.READ_CALENDAR,
@@ -46,6 +49,27 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         Manifest.permission.READ_SYNC_SETTINGS,
         Manifest.permission.WRITE_SYNC_SETTINGS
     )
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        Log.d(TAG, "onNewIntent")
+        intent?.let {
+            viewEventIfStartFromNotification(it)
+        }
+    }
+
+    private fun viewEventIfStartFromNotification(intent: Intent){
+        if (intent.action == Constants.ACTION_VIEW_EVENT) {
+            val eventId = intent.getLongExtra(Constants.EXTRA_EVENT_ID, -1)
+            if (eventId != -1L) {
+                CalendarProviderDAO.getEventAsync(
+                    this@MainActivity,
+                    GetEventObserver(),
+                    eventId
+                )
+            }
+        }
+    }
 
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,11 +88,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun getData() {
+    fun getData() {
         if (curAccountName != null) {
             CalendarProviderDAO.getEventsAsync(
                 this,
-                GetCurAccountEventsObserver(),
+                GetEventsObserver(),
                 curAccountName!!
             )
         } else {
@@ -90,6 +114,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         viewEventDialog = ViewEventDialog(supportFragmentManager)
 
         initAccountSpinner()
+        initChooseCalendarMenu()
+
+        confirmDeleteEventsDialog = ConfirmDeleteEventsDialog(supportFragmentManager)
 
         arrowUpImgView.setOnClickListener(this)
         arrowDownImgView.setOnClickListener(this)
@@ -105,7 +132,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         spinner.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onNothingSelected(parent: AdapterView<*>?) {
-                    adapter.submitList(null)
+                    adapter.updateEvents(null, null)
                 }
 
                 override fun onItemSelected(
@@ -119,11 +146,61 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
                     CalendarProviderDAO.getEventsAsync(
                         this@MainActivity,
-                        GetCurAccountEventsObserver(),
+                        GetEventsObserver(),
                         curAccountName!!
                     )
                 }
             }
+    }
+
+    private fun initChooseCalendarMenu(){
+        popupMenu = PopupMenu(this, chooseCalendarsImgView)
+
+        //registering popup with OnMenuItemClickListener
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            val calendarId = menuItem.itemId.toLong()
+
+            if (menuItem.isChecked) {
+                adapter.updateEvents(adapter.currentList.filter { it.calendarId != calendarId })
+
+                SharePreferenceManager.addCalendarToAccExcludedCalendars(
+                    this,
+                    calendarId,
+                    curAccountName!!
+                )
+
+                menuItem.isChecked = false
+            } else {
+                adapter.updateEvents(
+                    adapter.currentList.toMutableList().apply {
+                        addAll(
+                            curAccountEvents.filter { it.calendarId == calendarId }
+                        )
+                    }.sortedBy { it.startTime }
+                )
+
+                SharePreferenceManager.removeCalendarFromAccExcludedCalendars(
+                    this,
+                    calendarId,
+                    curAccountName!!
+                )
+
+                menuItem.isChecked = true
+            }
+
+            menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
+            menuItem.actionView = View(this)
+            menuItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+                override fun onMenuItemActionExpand(item: MenuItem): Boolean {
+                    return false
+                }
+
+                override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
+                    return false
+                }
+            })
+            return@setOnMenuItemClickListener false
+        }
     }
 
     override fun onClick(view: View) {
@@ -133,9 +210,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 //                    .setData(CalendarContract.Events.CONTENT_URI)
 //                    .putExtra(CalendarContract.Events.OWNER_ACCOUNT, curAccountName)
 //                startActivity(intent)
-                val event = Event(accountName = curAccountName!!, calendarId = getAccountPrimaryCalendarId(curAccountName!!))
+                val event = Event(
+                    accountName = curAccountName!!,
+                    calendarId = getAccountPrimaryCalendarId(curAccountName!!)
+                )
 
-                viewEventDialog.show(event, false)
+                viewEventDialog.show(event, true)
             }
             R.id.itemEvent -> {
 //                val position = recyclerView.getChildLayoutPosition(view)
@@ -149,13 +229,15 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 val position = recyclerView.getChildLayoutPosition(view)
                 val event = adapter.currentList[position]
 
-                viewEventDialog.show(event, false)
+                val isEditable =
+                    accounts[curAccountName!!]!!.calendars[event.calendarId]!!.isEditable()
+                viewEventDialog.show(event, false, isEditable)
             }
             R.id.refreshImgView -> {
                 swipeRefresh.isRefreshing = true
                 CalendarProviderDAO.getEventsAsync(
                     this,
-                    GetCurAccountEventsObserver(),
+                    GetEventsObserver(),
                     curAccountName!!
                 )
             }
@@ -169,14 +251,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
             R.id.deleteImgView -> {
                 val position = recyclerView.getChildLayoutPosition(view.parent.parent as View)
-                val eventId = adapter.currentList[position].id!!
+                val event = adapter.currentList[position]
 
-                CalendarProviderDAO.deleteEventAsync(this, eventId, DeleteEventObserver())
+                confirmDeleteEventsDialog.show(ArrayList<Long>().apply { add(event.id!!) })
             }
             R.id.chooseCalendarsImgView -> {
                 showChooseCalendarsMenu()
             }
         }
+    }
+
+    fun deleteEvents(eventsId: List<Long>) {
+        CalendarProviderDAO.deleteEventsAsync(this, eventsId, DeleteEventsObserver(eventsId))
     }
 
     override fun onDestroy() {
@@ -185,7 +271,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun getAccountPrimaryCalendarId(accountName: String): Long {
-        return accounts[accountName]!!.calendars.first { it.isPrimary }.id
+        return accounts[accountName]!!.calendars.values.first { it.isPrimary }.id
     }
 
     private fun updateAccountList(accounts: HashMap<String, Account>) {
@@ -240,53 +326,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         val curAccountCalendars = accounts[curAccountName]!!.calendars
         val exCalendarsId = SharePreferenceManager.getAccExcludedCalendarsId(this, curAccountName!!)
 
-        popupMenu = PopupMenu(this, chooseCalendarsImgView)
-
-        //registering popup with OnMenuItemClickListener
-        popupMenu.setOnMenuItemClickListener { menuItem ->
-            val calendarId = curAccountCalendars[menuItem.itemId].id
-
-            if(menuItem.isChecked){
-                adapter.submitList(
-                    adapter.currentList.filter { it.calendarId != calendarId }
-                )
-
-                SharePreferenceManager.addCalendarToAccExcludedCalendars(this, calendarId, curAccountName!!)
-
-                menuItem.isChecked = false
-            }else{
-                adapter.submitList(
-                    adapter.currentList.toMutableList().apply {
-                        addAll(
-                            curAccountEvents.filter { it.calendarId == curAccountCalendars[menuItem.itemId].id }
-                        )
-                    }.sortedBy { it.startTime }
-                )
-
-                SharePreferenceManager.removeCalendarFromAccExcludedCalendars(this, calendarId, curAccountName!!)
-
-                menuItem.isChecked = true
-            }
-
-            menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
-            menuItem.actionView = View(this)
-            menuItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-                override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-                    return false
-                }
-
-                override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-                    return false
-                }
-            })
-            return@setOnMenuItemClickListener false
-        }
-
         popupMenu.menu.removeGroup(0)
 
-        curAccountCalendars.forEachIndexed { i, calendar ->
-            popupMenu.menu.add(0, i, i, calendar.displayName)
-            popupMenu.menu.findItem(i).isChecked = !exCalendarsId.contains(calendar.id.toString())
+        curAccountCalendars.values.forEach { calendar ->
+            val calendarId = calendar.id.toInt()
+            popupMenu.menu.add(0, calendarId, calendarId, calendar.displayName)
+            popupMenu.menu.findItem(calendarId).isChecked =
+                !exCalendarsId.contains(calendarId.toString())
         }
 
         popupMenu.menu.setGroupCheckable(0, true, false)
@@ -296,14 +342,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     //
 
-    inner class GetCurAccountEventsObserver : SingleObserver<List<Event>> {
+    inner class GetEventsObserver : SingleObserver<List<Event>> {
         override fun onSuccess(t: List<Event>) {
             curAccountEvents = t.sortedBy { it.startTime }
 
-            val exCalendarsId = SharePreferenceManager.getAccExcludedCalendarsId(this@MainActivity, curAccountName!!)
+            val exCalendarsId = SharePreferenceManager.getAccExcludedCalendarsId(
+                this@MainActivity,
+                curAccountName!!
+            )
 
-            adapter.submitList(
-                curAccountEvents.filter { !exCalendarsId.contains(it.calendarId.toString()) }
+            adapter.updateEvents(
+                curAccountEvents.filter { !exCalendarsId.contains(it.calendarId.toString()) },
+                accounts[curAccountName!!]
             )
 
             swipeRefresh.isRefreshing = false
@@ -319,9 +369,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    inner class GetAccountsObserver : SingleObserver<HashMap<String, Account>> {
-        override fun onSuccess(t: HashMap<String, Account>) {
-            this@MainActivity.updateAccountList(t)
+    inner class GetEventObserver : SingleObserver<Event> {
+        override fun onSuccess(t: Event) {
+            val isEditable = accounts[t.accountName]!!.calendars[t.calendarId]!!.isEditable()
+            viewEventDialog.show(t, false, isEditable)
         }
 
         override fun onSubscribe(d: Disposable) {
@@ -333,9 +384,35 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    inner class DeleteEventObserver : CompletableObserver {
+    inner class GetAccountsObserver : SingleObserver<HashMap<String, Account>> {
+        override fun onSuccess(t: HashMap<String, Account>) {
+            updateAccountList(t)
+
+            // show event if start app from notification
+            viewEventIfStartFromNotification(intent)
+        }
+
+        override fun onSubscribe(d: Disposable) {
+            compositeDisposable.add(d)
+        }
+
+        override fun onError(e: Throwable) {
+            e.printStackTrace()
+        }
+    }
+
+    inner class DeleteEventsObserver(private val eventsId: List<Long>) : CompletableObserver {
         override fun onComplete() {
-            Toast.makeText(this@MainActivity, getString(R.string.event_deleted), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this@MainActivity,
+                getString(
+                    if (eventsId.size == 1)
+                        R.string.event_deleted
+                    else
+                        R.string.events_deleted
+                ),
+                Toast.LENGTH_SHORT
+            ).show()
 
             getData()
         }

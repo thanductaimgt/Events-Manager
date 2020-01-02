@@ -11,4 +11,5 @@
     <color name="lightCancelButtonBackground">#e61515</color>
     <color name="lightText">#212121</color>
     <color name="strokeButton">#fcce62</color>
+    <color name="actionText">#488bf7</color>
 </resources>

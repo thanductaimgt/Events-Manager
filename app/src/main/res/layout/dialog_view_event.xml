@@ -1,243 +1,263 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white">
-
-    <ImageView
-        app:layout_constraintTop_toTopOf="@id/cancelImgView"
-        app:layout_constraintEnd_toStartOf="@id/saveImgView"
-        android:id="@+id/editImgView"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/shape_round"
-        android:padding="8dp"
-        android:src="@drawable/edit"/>
-
-    <ImageView
-        app:layout_constraintTop_toTopOf="@id/cancelImgView"
-        app:layout_constraintEnd_toStartOf="@id/cancelImgView"
-        android:id="@+id/saveImgView"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/shape_round"
-        android:padding="8dp"
-        android:src="@drawable/check"/>
-
-    <ImageView
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_margin="8dp"
-        android:id="@+id/cancelImgView"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:background="@drawable/shape_round"
-        android:padding="10dp"
-        android:src="@drawable/cancel"/>
-
-    <ImageView
-        android:id="@+id/titleIcon"
-        android:layout_width="@dimen/sizeIconViewEvent"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:src="@drawable/title"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/titleEditText"
-        app:layout_constraintBottom_toBottomOf="@id/titleEditText"
-        />
-
-    <EditText
-        android:hint="@string/no_title"
-        android:textColor="@drawable/no_disabled_color"
-        android:background="@drawable/shape_padding_trans"
-        android:id="@+id/titleEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:textSize="@dimen/sizeTextTitle"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/titleIcon"
-        app:layout_constraintTop_toBottomOf="@id/cancelImgView"/>
-
-    <View
-        android:layout_marginTop="6dp"
-        android:background="@color/lightWeakGray"
-        app:layout_constraintTop_toBottomOf="@id/titleEditText"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="1dp"/>
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:layout_marginTop="4dp"
-        android:id="@+id/startDateTimeDescTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/start_time"
-        app:layout_constraintStart_toStartOf="@id/titleIcon"
-        app:layout_constraintTop_toTopOf="@id/startDateTV"
-        />
+        <ImageView
+            android:id="@+id/editImgView"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/shape_round"
+            android:padding="8dp"
+            android:src="@drawable/edit"
+            app:layout_constraintEnd_toStartOf="@id/saveImgView"
+            app:layout_constraintTop_toTopOf="@id/cancelImgView" />
 
-    <TextView
-        android:layout_marginTop="4dp"
-        android:id="@+id/endDateTimeDescTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/end_time"
-        app:layout_constraintStart_toStartOf="@id/titleIcon"
-        app:layout_constraintTop_toTopOf="@id/endDateTV" />
+        <ImageView
+            android:id="@+id/saveImgView"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/shape_round"
+            android:padding="8dp"
+            android:src="@drawable/check"
+            app:layout_constraintEnd_toStartOf="@id/cancelImgView"
+            app:layout_constraintTop_toTopOf="@id/cancelImgView" />
 
-    <TextView
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp"
-        android:padding="4dp"
-        android:id="@+id/startDateTV"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constrainedWidth="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        app:layout_constraintEnd_toStartOf="@id/startTimeTV"
-        app:layout_constraintStart_toEndOf="@id/endDateTimeDescTV"
-        app:layout_constraintTop_toBottomOf="@id/titleEditText"
-        tools:text="Th6, 13 thg 12, 2019" />
+        <ImageView
+            android:id="@+id/cancelImgView"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/shape_round"
+            android:padding="10dp"
+            android:src="@drawable/cancel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        app:layout_constraintStart_toEndOf="@id/startDateTV"
-        android:layout_marginEnd="16dp"
-        android:id="@+id/startTimeTV"
-        tools:text="14:00"
-        app:layout_constraintTop_toTopOf="@id/startDateTimeDescTV"
-        app:layout_constraintEnd_toStartOf="@id/chooseStartDateTimeImgView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        <ImageView
+            android:id="@+id/titleIcon"
+            android:layout_width="@dimen/sizeIconViewEvent"
+            android:layout_height="0dp"
+            android:layout_marginStart="16dp"
+            android:src="@drawable/title"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/titleEditText" />
 
-    <ImageView
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:padding="6dp"
-        android:id="@+id/chooseStartDateTimeImgView"
-        app:layout_constraintTop_toTopOf="@id/startDateTimeDescTV"
-        app:layout_constraintBottom_toBottomOf="@id/startDateTimeDescTV"
-        app:layout_constraintEnd_toEndOf="@id/cancelImgView"
-        android:src="@drawable/calendar"
-        android:layout_width="35dp"
-        android:layout_height="0dp"
-        app:layout_constraintDimensionRatio="1:1"/>
+        <EditText
+            android:inputType="textMultiLine"
+            android:id="@+id/titleEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/shape_padding_trans"
+            android:hint="@string/no_title"
+            android:textColor="@drawable/no_disabled_color"
+            android:textSize="@dimen/sizeTextTitle"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/titleIcon"
+            app:layout_constraintTop_toBottomOf="@id/cancelImgView" />
 
-    <TextView
-        android:layout_marginEnd="16dp"
-        android:padding="4dp"
-        android:layout_marginTop="8dp"
-        android:id="@+id/endDateTV"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constrainedWidth="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toStartOf="@id/endTimeTV"
-        app:layout_constraintStart_toStartOf="@id/startDateTV"
-        app:layout_constraintTop_toBottomOf="@id/startDateTV"
-        tools:text="Th7, 13 thg 12, 2019" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="6dp"
+            android:background="@color/lightWeakGray"
+            app:layout_constraintTop_toBottomOf="@id/titleEditText" />
 
-    <View
-        android:layout_marginTop="6dp"
-        android:background="@color/lightWeakGray"
-        app:layout_constraintTop_toBottomOf="@id/endDateTV"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"/>
+        <TextView
+            android:id="@+id/startDateTimeDescTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/start_time"
+            app:layout_constraintStart_toStartOf="@id/titleIcon"
+            app:layout_constraintTop_toTopOf="@id/startDateTV" />
 
-    <TextView
-        app:layout_constraintStart_toEndOf="@id/startDateTV"
-        android:layout_marginEnd="16dp"
-        android:id="@+id/endTimeTV"
-        tools:text="14:00"
-        app:layout_constraintTop_toTopOf="@id/endDateTimeDescTV"
-        app:layout_constraintStart_toStartOf="@id/startTimeTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        <TextView
+            android:id="@+id/endDateTimeDescTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/end_time"
+            app:layout_constraintStart_toStartOf="@id/titleIcon"
+            app:layout_constraintTop_toTopOf="@id/endDateTV" />
 
-    <ImageView
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:padding="6dp"
-        android:id="@+id/chooseEndDateTimeImgView"
-        app:layout_constraintTop_toTopOf="@id/endDateTimeDescTV"
-        app:layout_constraintBottom_toBottomOf="@id/endDateTimeDescTV"
-        app:layout_constraintEnd_toEndOf="@id/chooseStartDateTimeImgView"
-        android:src="@drawable/calendar"
-        android:layout_width="35dp"
-        android:layout_height="0dp"
-        app:layout_constraintDimensionRatio="1:1"/>
+        <TextView
+            android:id="@+id/startDateTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:padding="4dp"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintEnd_toStartOf="@id/startTimeTV"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toEndOf="@id/endDateTimeDescTV"
+            app:layout_constraintTop_toBottomOf="@id/titleEditText"
+            tools:text="Th6, 13 thg 12, 2019" />
 
-    <ImageView
-        android:id="@+id/locationIcon"
-        android:layout_width="@dimen/sizeIconViewEvent"
-        android:layout_height="0dp"
-        android:src="@drawable/location"
-        app:layout_constraintBottom_toBottomOf="@id/locationEditText"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintStart_toStartOf="@id/titleIcon"
-        app:layout_constraintTop_toTopOf="@id/locationEditText" />
+        <TextView
+            android:id="@+id/startTimeTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toStartOf="@id/chooseStartDateTimeImgView"
+            app:layout_constraintStart_toEndOf="@id/startDateTV"
+            app:layout_constraintTop_toTopOf="@id/startDateTimeDescTV"
+            tools:text="14:00" />
 
-    <EditText
-        android:hint="@string/no_location"
-        android:textColor="@drawable/no_disabled_color"
-        android:textSize="@dimen/sizeTextNormal"
-        android:background="@drawable/shape_padding_trans"
-        android:id="@+id/locationEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        app:layout_constraintEnd_toEndOf="@id/titleEditText"
-        app:layout_constraintStart_toStartOf="@id/titleEditText"
-        app:layout_constraintTop_toBottomOf="@id/endDateTV"/>
+        <ImageView
+            android:id="@+id/chooseStartDateTimeImgView"
+            android:layout_width="35dp"
+            android:layout_height="0dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="6dp"
+            android:src="@drawable/calendar"
+            app:layout_constraintBottom_toBottomOf="@id/startDateTimeDescTV"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="@id/cancelImgView"
+            app:layout_constraintTop_toTopOf="@id/startDateTimeDescTV" />
 
-    <ImageView
-        android:id="@+id/descIcon"
-        android:layout_width="@dimen/sizeIconViewEvent"
-        android:layout_height="0dp"
-        android:src="@drawable/description"
-        app:layout_constraintBottom_toBottomOf="@id/descEditText"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintStart_toStartOf="@id/titleIcon"
-        app:layout_constraintTop_toTopOf="@id/descEditText" />
+        <TextView
+            android:id="@+id/endDateTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:padding="4dp"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintEnd_toStartOf="@id/endTimeTV"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="@id/startDateTV"
+            app:layout_constraintTop_toBottomOf="@id/startDateTV"
+            tools:text="Th7, 13 thg 12, 2019" />
 
-    <EditText
-        android:hint="@string/no_desc"
-        android:textColor="@drawable/no_disabled_color"
-        android:textSize="@dimen/sizeTextNormal"
-        android:background="@drawable/shape_padding_trans"
-        android:id="@+id/descEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="@id/titleEditText"
-        app:layout_constraintStart_toStartOf="@id/titleEditText"
-        app:layout_constraintTop_toBottomOf="@id/locationEditText" />
+        <TextView
+            android:id="@+id/warningTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:text="@string/start_time_can_not_exceed_end_time"
+            android:textAlignment="center"
+            android:textColor="@color/lightErrorText"
+            android:textSize="@dimen/sizeTextSmall"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/endDateTV"
+            tools:visibility="visible" />
 
-    <ImageView
-        android:id="@+id/hostIcon"
-        android:layout_width="@dimen/sizeIconViewEvent"
-        android:layout_height="0dp"
-        android:src="@drawable/host"
-        app:layout_constraintBottom_toBottomOf="@id/hostTextView"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="@id/titleIcon"
-        app:layout_constraintStart_toStartOf="@id/titleIcon"
-        app:layout_constraintTop_toTopOf="@id/hostTextView" />
+        <View
+            android:id="@+id/line"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="6dp"
+            android:background="@color/lightWeakGray"
+            app:layout_constraintTop_toBottomOf="@id/warningTextView" />
 
-    <TextView
-        android:background="@drawable/shape_padding_trans"
-        android:id="@+id/hostTextView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="@id/titleEditText"
-        app:layout_constraintStart_toStartOf="@id/titleEditText"
-        app:layout_constraintTop_toBottomOf="@id/descEditText"
-        tools:text="VNG Corp" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/endTimeTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintStart_toEndOf="@id/startDateTV"
+            app:layout_constraintStart_toStartOf="@id/startTimeTV"
+            app:layout_constraintTop_toTopOf="@id/endDateTimeDescTV"
+            tools:text="14:00" />
+
+        <ImageView
+            android:id="@+id/chooseEndDateTimeImgView"
+            android:layout_width="35dp"
+            android:layout_height="0dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="6dp"
+            android:src="@drawable/calendar"
+            app:layout_constraintBottom_toBottomOf="@id/endDateTimeDescTV"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="@id/chooseStartDateTimeImgView"
+            app:layout_constraintTop_toTopOf="@id/endDateTimeDescTV" />
+
+        <ImageView
+            android:id="@+id/locationIcon"
+            android:layout_width="@dimen/sizeIconViewEvent"
+            android:layout_height="0dp"
+            android:src="@drawable/location"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintStart_toStartOf="@id/titleIcon"
+            app:layout_constraintTop_toTopOf="@id/locationEditText" />
+
+        <EditText
+            android:id="@+id/locationEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/shape_padding_trans"
+            android:hint="@string/no_location"
+            android:textColor="@drawable/no_disabled_color"
+            android:textSize="@dimen/sizeTextNormal"
+            app:layout_constraintEnd_toEndOf="@id/titleEditText"
+            app:layout_constraintStart_toStartOf="@id/titleEditText"
+            app:layout_constraintTop_toBottomOf="@id/line" />
+
+        <ImageView
+            android:id="@+id/descIcon"
+            android:layout_width="@dimen/sizeIconViewEvent"
+            android:layout_height="0dp"
+            android:src="@drawable/description"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintStart_toStartOf="@id/titleIcon"
+            app:layout_constraintTop_toTopOf="@id/descEditText" />
+
+        <EditText
+            android:id="@+id/descEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/shape_padding_trans"
+            android:hint="@string/no_desc"
+            android:textColor="@drawable/no_disabled_color"
+            android:textSize="@dimen/sizeTextNormal"
+            app:layout_constraintEnd_toEndOf="@id/titleEditText"
+            app:layout_constraintStart_toStartOf="@id/titleEditText"
+            app:layout_constraintTop_toBottomOf="@id/locationEditText" />
+
+        <ImageView
+            android:id="@+id/hostIcon"
+            android:layout_width="@dimen/sizeIconViewEvent"
+            android:layout_height="0dp"
+            android:src="@drawable/host"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="@id/titleIcon"
+            app:layout_constraintStart_toStartOf="@id/titleIcon"
+            app:layout_constraintTop_toTopOf="@id/hostTextView" />
+
+        <TextView
+            android:id="@+id/hostTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/shape_padding_trans"
+            app:layout_constraintEnd_toEndOf="@id/titleEditText"
+            app:layout_constraintStart_toStartOf="@id/titleEditText"
+            app:layout_constraintTop_toBottomOf="@id/descEditText"
+            tools:text="VNG Corp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

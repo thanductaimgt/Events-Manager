@@ -1,7 +1,6 @@
 package zalo.taitd.calendar
 
 import android.annotation.SuppressLint
-import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
@@ -37,7 +36,8 @@ object CalendarProviderDAO {
         CalendarContract.Calendars._ID,
         CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
         CalendarContract.Calendars.ACCOUNT_NAME,
-        CalendarContract.Calendars.IS_PRIMARY
+        CalendarContract.Calendars.IS_PRIMARY,
+        CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL
     )
 
     fun getAccountsAsync(context: Context, observer: SingleObserver<HashMap<String, Account>>) {
@@ -62,14 +62,15 @@ object CalendarProviderDAO {
         // Use the cursor to step through the returned records
 
         while (cursor != null && cursor.moveToNext()) {
-            val id = cursor.getLong(cursor.getColumnIndex(CalendarContract.Calendars._ID))
+            val id = cursor.getLong(0)
             val displayName =
-                cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME))
+                cursor.getString(1)
             val accountName: String =
-                cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_NAME))
+                cursor.getString(2)
                     ?: ""
             val isPrimaryCalendar =
-                cursor.getInt(cursor.getColumnIndex(CalendarContract.Calendars.IS_PRIMARY)) == 1
+                cursor.getInt(3) == 1
+            val accessLevel = cursor.getInt(4)
 
             var account = res[accountName]
 
@@ -77,12 +78,14 @@ object CalendarProviderDAO {
                 account = Account(accountName)
                 res[accountName] = account
             }
-            account.calendars.add(
-                Calendar(
-                    id, displayName, accountName, isPrimaryCalendar
-                )
+
+            val calendar =  Calendar(
+                id, displayName, accountName, isPrimaryCalendar, accessLevel
             )
+
+            account.calendars[calendar.id] = calendar
         }
+
         cursor?.close()
         Log.d(TAG, "accounts: $res")
 
@@ -133,6 +136,18 @@ object CalendarProviderDAO {
         return res
     }
 
+    fun getEventAsync(
+        context: Context,
+        observer: SingleObserver<Event>,
+        eventId:Long
+    ) {
+        Single.fromCallable {
+            getEventSync(context, eventId)
+        }.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(observer)
+    }
+
     @SuppressLint("MissingPermission")
     fun getEventSync(context: Context, eventId: Long): Event {
         // Run query
@@ -161,22 +176,24 @@ object CalendarProviderDAO {
         throw Throwable("cursor null")
     }
 
-    fun deleteEventAsync(
+    fun deleteEventsAsync(
         context: Context,
-        eventId: Long,
+        eventsId: List<Long>,
         observer: CompletableObserver? = null
     ) {
         Completable.fromCallable {
-            deleteEventSync(context, eventId)
+            deleteEventsSync(context, eventsId)
         }.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .let { completable -> observer?.let { completable.subscribe(observer) } }
     }
 
-    private fun deleteEventSync(context: Context, eventId: Long) {
-        val deleteUri: Uri =
-            ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId)
-        context.contentResolver.delete(deleteUri, null, null)
+    private fun deleteEventsSync(context: Context, eventsId: List<Long>) {
+        val where = "(${CalendarContract.Events._ID} == ?)"
+        val selectionArgs: Array<String?> = eventsId.map { it.toString() }.toTypedArray()
+
+        val eventTableUri: Uri = CalendarContract.Events.CONTENT_URI
+        context.contentResolver.delete(eventTableUri, where, selectionArgs)
     }
 
     private fun parseEventFromCursor(cursor: Cursor): Event {

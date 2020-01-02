@@ -77,7 +77,7 @@
             android:paddingStart="8dp"
             android:paddingTop="16dp"
             android:paddingEnd="8dp"
-            android:paddingBottom="132dp"
+            android:paddingBottom="148dp"
             tools:listitem="@layout/item_event" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

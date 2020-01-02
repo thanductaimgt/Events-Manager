@@ -23,5 +23,15 @@
     <string name="no_desc">không có mô tả</string>
     <string name="event_created">Đã tạo sự kiện</string>
     <string name="event_edited">Chỉnh sửa thành công</string>
+    <string name="delete_event_title">Xóa sự kiện</string>
+    <string name="delete_event_desc">Bạn có chắc chắn muốn xóa sự kiện đã chọn ?</string>
+    <string name="delete_events_title">Xóa các sự kiện</string>
+    <string name="delete_events_desc">Bạn có chắc chắn muốn xóa các sự kiện đã chọn ?</string>
     <string name="event_deleted">Đã xóa sự kiện</string>
+    <string name="events_deleted">Đã xóa các sự kiện</string>
+    <string name="from">Từ:</string>
+    <string name="to">Đến:</string>
+    <string name="cancel">Hủy</string>
+    <string name="confirm">Xác nhận</string>
+    <string name="start_time_can_not_exceed_end_time">Thời gian bắt đầu không được sau thời gian kết thúc</string>
 </resources>

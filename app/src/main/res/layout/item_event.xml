@@ -71,13 +71,66 @@
             app:layout_constraintTop_toBottomOf="@id/titleEditText" />
 
         <TextView
-            android:id="@+id/timeTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="@id/titleEditText"
+            android:id="@+id/startDateTimeDescTV"
             app:layout_constraintStart_toStartOf="@id/titleEditText"
             app:layout_constraintTop_toTopOf="@id/timeIcon"
-            tools:text="8AM - 5PM" />
+            android:text="@string/from"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <TextView
+            app:layout_constraintHorizontal_bias="1"
+            android:layout_marginEnd="16dp"
+            app:layout_constrainedWidth="true"
+            android:layout_marginStart="16dp"
+            android:id="@+id/startDateTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@id/startTimeTextView"
+            app:layout_constraintStart_toEndOf="@id/startDateTimeDescTV"
+            app:layout_constraintTop_toTopOf="@id/startDateTimeDescTV"
+            tools:text="01/01/201999999999999999999999999999999999999" />
+
+        <TextView
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constrainedWidth="true"
+            android:id="@+id/startTimeTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="@id/titleEditText"
+            app:layout_constraintStart_toEndOf="@id/guideline"
+            app:layout_constraintTop_toTopOf="@id/startDateTimeDescTV"
+            tools:text="10:00" />
+
+        <TextView
+            android:layout_marginTop="2dp"
+            android:id="@+id/endDateTimeDescTV"
+            app:layout_constraintStart_toStartOf="@id/titleEditText"
+            app:layout_constraintTop_toBottomOf="@id/startDateTextView"
+            android:text="@string/to"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <TextView
+            android:layout_marginStart="16dp"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintHorizontal_bias="1"
+            android:id="@+id/endDateTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="@id/startDateTextView"
+            app:layout_constraintStart_toEndOf="@id/startDateTimeDescTV"
+            app:layout_constraintTop_toTopOf="@id/endDateTimeDescTV"
+            tools:text="01/01/201999999999999999999999999999999999999" />
+
+        <TextView
+            app:layout_constrainedWidth="true"
+            app:layout_constraintHorizontal_bias="0"
+            android:id="@+id/endTimeTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="@id/titleEditText"
+            app:layout_constraintStart_toStartOf="@id/startTimeTextView"
+            app:layout_constraintTop_toTopOf="@id/endDateTimeDescTV"
+            tools:text="11:00" />
 
         <ImageView
             android:id="@+id/locationIcon"
@@ -87,7 +140,7 @@
             android:src="@drawable/location"
             app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintStart_toStartOf="@id/titleIcon"
-            app:layout_constraintTop_toBottomOf="@id/timeTextView" />
+            app:layout_constraintTop_toBottomOf="@id/endDateTextView" />
 
         <TextView
             android:id="@+id/locationTextView"
@@ -97,5 +150,12 @@
             app:layout_constraintStart_toStartOf="@id/titleEditText"
             app:layout_constraintTop_toTopOf="@id/locationIcon"
             tools:text="Bach Khoa University branch 2, Di An, Binh Duong" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.7" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import zalo.taitd.calendar.R
 import zalo.taitd.calendar.CalendarProviderDAO
+import zalo.taitd.calendar.MainActivity
 import zalo.taitd.calendar.models.Event
 import zalo.taitd.calendar.utils.Constants
 import zalo.taitd.calendar.utils.TAG
@@ -65,9 +66,10 @@ class RemindService : IntentService(RemindService::class.java.simpleName) {
 
         val event = CalendarProviderDAO.getEventSync(this, eventId)
 
-        val uri: Uri =
-            ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId)
-        val notificationIntent = Intent(Intent.ACTION_VIEW).setData(uri)
+        val notificationIntent = Intent(this, MainActivity::class.java).apply {
+            action = Constants.ACTION_VIEW_EVENT
+            putExtra(Constants.EXTRA_EVENT_ID, event.id)
+        }
 
         notificationIntent.flags =
             Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -90,7 +92,7 @@ class RemindService : IntentService(RemindService::class.java.simpleName) {
             .setSmallIcon(R.drawable.app_icon_transparent)
             .setTicker(this.getString(R.string.app_name))
             .setContentTitle(getNotificationTitle())
-            .setContentText(notificationTextFormat)
+            .setContentText(event.title)
             .setStyle(NotificationCompat.BigTextStyle().bigText(notificationTextFormat))
             .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
             .setDefaults(Notification.DEFAULT_SOUND)

@@ -1,7 +1,5 @@
 package zalo.taitd.calendar.utils
 
-import android.provider.CalendarContract
-
 object Constants {
     const val CALENDAR_PERMISSIONS_REQUEST = 0
 
@@ -11,5 +9,6 @@ object Constants {
     const val ONE_HOUR_IN_MILLISECOND = 60 * ONE_MIN_IN_MILLISECOND
     const val ONE_DAY_IN_MILLISECOND = 24 * ONE_HOUR_IN_MILLISECOND
 
-    const val AUTHORITY = CalendarContract.AUTHORITY
+    const val ACTION_VIEW_EVENT = "zalo.taitd.calendar.ACTION_VIEW_EVENT"
+    const val EXTRA_EVENT_ID = "EXTRA_EVENT_ID"
 }

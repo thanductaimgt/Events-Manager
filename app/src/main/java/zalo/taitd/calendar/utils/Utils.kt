@@ -11,8 +11,8 @@ object Utils {
         return SimpleDateFormat.getTimeInstance(DateFormat.SHORT).format(date)
     }
 
-    fun getDateFormat(date: Date): String {
-        return SimpleDateFormat.getDateInstance(DateFormat.FULL).format(date)
+    fun getDateFormat(date: Date, isLong:Boolean=true): String {
+        return SimpleDateFormat.getDateInstance(if(isLong) DateFormat.FULL else DateFormat.DEFAULT).format(date)
     }
 
     fun getDateTimeDiffFormat(context: Context, date: Date, now: Date = Date()): String {

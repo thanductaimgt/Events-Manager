@@ -13,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.view.animation.CycleInterpolator
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -29,9 +30,11 @@ import java.util.*
 
 class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
     View.OnClickListener {
-    private lateinit var event: Event
+    private lateinit var originalEvent: Event
+    private lateinit var editedEvent: Event
     private var isEditing = false
     private var isEdit = false
+    private var isEditable = false
     private val startCalendar = Calendar.getInstance()
     private val endCalendar = Calendar.getInstance()
 
@@ -44,16 +47,16 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
     }
 
     override fun onPause() {
-        event.title = titleEditText.text.toString()
-        event.location = locationEditText.text.toString()
-        event.description = descEditText.text.toString()
+        editedEvent.title = titleEditText.text.toString()
+        editedEvent.location = locationEditText.text.toString()
+        editedEvent.description = descEditText.text.toString()
         super.onPause()
     }
 
     override fun onResume() {
-        titleEditText.setText(event.title)
-        locationEditText.setText(event.location)
-        descEditText.setText(event.description)
+        titleEditText.setText(editedEvent.title)
+        locationEditText.setText(editedEvent.location)
+        descEditText.setText(editedEvent.description)
         super.onResume()
     }
 
@@ -77,8 +80,8 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         // dialog full screen
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        startCalendar.time = event.startTime
-        endCalendar.time = event.endTime
+        startCalendar.time = originalEvent.startTime
+        endCalendar.time = originalEvent.endTime
 
         startDateTV.text = Utils.getDateFormat(startCalendar.time)
         startTimeTV.text = Utils.getTimeFormat(startCalendar.time)
@@ -86,11 +89,11 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         endDateTV.text = Utils.getDateFormat(endCalendar.time)
         endTimeTV.text = Utils.getTimeFormat(endCalendar.time)
 
-        titleEditText.setText(event.title)
-        locationEditText.setText(event.location)
-        descEditText.setText(event.description)
+        titleEditText.setText(originalEvent.title)
+        locationEditText.setText(originalEvent.location)
+        descEditText.setText(originalEvent.description)
 
-        hostTextView.text = event.accountName
+        hostTextView.text = originalEvent.accountName
 
         if (isEditing) {
             enableEdit()
@@ -99,32 +102,40 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         }
 
         cancelImgView.setOnClickListener(this)
-        editImgView.setOnClickListener(this)
         saveImgView.setOnClickListener(this)
+        if (isEditable) {
+            editImgView.setOnClickListener(this)
+        } else {
+            editImgView.visibility = View.INVISIBLE
+        }
 
-        startDateTV.setOnClickListener(this)
-        startTimeTV.setOnClickListener(this)
-
-        endDateTV.setOnClickListener(this)
-        endTimeTV.setOnClickListener(this)
+        warningTextView.visibility = View.GONE
 
         chooseStartDateTimeImgView.setOnClickListener(this)
         chooseEndDateTimeImgView.setOnClickListener(this)
     }
 
-    fun show(event: Event, isEdit: Boolean) {
-        this.event = event.copy()
+    fun show(event: Event, isEdit: Boolean, isEditable: Boolean = true) {
+        this.originalEvent = event
+        this.editedEvent = event.copy()
         this.isEdit = isEdit
+        this.isEditable = isEditable
         this.isEditing = isEdit
-        show(fm, TAG)
+
+        if (dialog != null && dialog!!.isShowing) {
+            initView()
+        } else {
+            show(fm, TAG)
+        }
     }
 
     override fun onClick(p0: View?) {
         when (p0!!.id) {
             R.id.cancelImgView -> {
-                if (event.id == null || isEdit || !isEditing) {
+                if (originalEvent.id == null || isEdit || !isEditing) {
                     dismiss()
                 } else {
+                    initView()
                     disableEdit()
                     isEditing = false
                 }
@@ -134,20 +145,34 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
                 isEditing = !isEditing
             }
             R.id.saveImgView -> {
-                if (event.id == null) {
-                    createEvent()
-                    Toast.makeText(context, getString(R.string.event_created), Toast.LENGTH_SHORT)
-                        .show()
-                    dismiss()
-                }else{
-                    updateEvent()
-                    disableEdit()
-                    isEditing = false
-                    Toast.makeText(context, getString(R.string.event_edited), Toast.LENGTH_SHORT)
-                        .show()
-                    if(isEdit){
+                if (warningTextView.visibility == View.VISIBLE) {
+                    warningTextView.animate()
+                        .translationX(16f).interpolator = CycleInterpolator(7f)
+                } else {
+                    if (originalEvent.id == null) {
+                        createEvent()
+                        Toast.makeText(
+                            context,
+                            getString(R.string.event_created),
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
                         dismiss()
+                    } else {
+                        updateEvent()
+                        disableEdit()
+                        isEditing = false
+                        Toast.makeText(
+                            context,
+                            getString(R.string.event_edited),
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                        if (isEdit) {
+                            dismiss()
+                        }
                     }
+                    (context as MainActivity).getData()
                 }
             }
             R.id.chooseStartDateTimeImgView -> showDatePickerDialog(
@@ -158,10 +183,10 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
                 isStart = false,
                 isPickBoth = true
             )
-            R.id.startDateTV->showDatePickerDialog(isStart = true, isPickBoth = false)
-            R.id.startTimeTV->showTimePickerDialog(isStart = true)
-            R.id.endDateTV->showDatePickerDialog(isStart = false, isPickBoth = false)
-            R.id.endTimeTV->showTimePickerDialog(isStart = false)
+            R.id.startDateTV -> showDatePickerDialog(isStart = true, isPickBoth = false)
+            R.id.startTimeTV -> showTimePickerDialog(isStart = true)
+            R.id.endDateTV -> showDatePickerDialog(isStart = false, isPickBoth = false)
+            R.id.endTimeTV -> showTimePickerDialog(isStart = false)
         }
     }
 
@@ -179,7 +204,7 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         val values = getCurrentValues().apply {
             put(
                 CalendarContract.Events.CALENDAR_ID,
-                event.calendarId
+                originalEvent.calendarId
             )
             put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().displayName)
         }
@@ -189,7 +214,7 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
     private fun updateEvent() {
         val values = getCurrentValues()
         val updateUri =
-            ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.id!!)
+            ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, originalEvent.id!!)
         context!!.contentResolver.update(updateUri, values, null, null)
     }
 
@@ -210,6 +235,12 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         titleEditText.background = editTextBackground
         locationEditText.background = editTextBackground
         descEditText.background = editTextBackground
+
+        startDateTV.setOnClickListener(this)
+        startTimeTV.setOnClickListener(this)
+
+        endDateTV.setOnClickListener(this)
+        endTimeTV.setOnClickListener(this)
     }
 
     private fun disableEdit() {
@@ -229,6 +260,20 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         titleEditText.background = editTextBackground
         locationEditText.background = editTextBackground
         descEditText.background = editTextBackground
+
+        startDateTV.setOnClickListener(null)
+        startTimeTV.setOnClickListener(null)
+
+        endDateTV.setOnClickListener(null)
+        endTimeTV.setOnClickListener(null)
+    }
+
+    private fun checkStartTimeEndTime() {
+        if (startCalendar.timeInMillis > endCalendar.timeInMillis) {
+            warningTextView.visibility = View.VISIBLE
+        } else {
+            warningTextView.visibility = View.GONE
+        }
     }
 
     private fun showTimePickerDialog(isStart: Boolean) {
@@ -251,6 +296,8 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
                     set(Calendar.MINUTE, minute)
                 }
                 textView.text = Utils.getTimeFormat(calendar.time)
+
+                checkStartTimeEndTime()
             },
             calendar.get(Calendar.HOUR_OF_DAY),
             calendar.get(Calendar.MINUTE),
@@ -258,7 +305,7 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         ).show()
     }
 
-    private fun showDatePickerDialog(isStart: Boolean, isPickBoth:Boolean) {
+    private fun showDatePickerDialog(isStart: Boolean, isPickBoth: Boolean) {
         val calendar: Calendar
         val textView: TextView
 
@@ -279,9 +326,11 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
                     set(Calendar.YEAR, year)
                 }
                 textView.text = Utils.getDateFormat(calendar.time)
-                if(isPickBoth){
+                if (isPickBoth) {
                     showTimePickerDialog(isStart)
                 }
+
+                checkStartTimeEndTime()
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),

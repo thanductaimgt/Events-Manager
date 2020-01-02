@@ -1,5 +1,6 @@
 package zalo.taitd.calendar.adapters
 
+import android.provider.CalendarContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,12 +8,16 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_event.view.*
 import zalo.taitd.calendar.R
+import zalo.taitd.calendar.models.Account
 import zalo.taitd.calendar.models.Event
 import zalo.taitd.calendar.utils.EventDiffUtil
-import java.text.SimpleDateFormat
+import zalo.taitd.calendar.utils.Utils
 
 class EventAdapter(eventDiffUtil: EventDiffUtil) :
     ListAdapter<Event, EventAdapter.EventViewHolder>(eventDiffUtil) {
+
+    var account: Account? = null
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -49,6 +54,11 @@ class EventAdapter(eventDiffUtil: EventDiffUtil) :
         }
     }
 
+    fun updateEvents(events: List<Event>?, account: Account? = this.account) {
+        this.account = account
+        submitList(events)
+    }
+
     inner class EventViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(position: Int) {
             val event = currentList[position]
@@ -56,6 +66,7 @@ class EventAdapter(eventDiffUtil: EventDiffUtil) :
             bindTitle(event)
             bindTime(event)
             bindLocation(event)
+            bindActions(event)
 
             itemView.apply {
                 editImgView.setOnClickListener(context as View.OnClickListener)
@@ -82,11 +93,20 @@ class EventAdapter(eventDiffUtil: EventDiffUtil) :
         }
 
         fun bindTime(event: Event) {
-            itemView.timeTextView.text = String.format(
-                "%s - %s",
-                SimpleDateFormat.getDateTimeInstance().format(event.startTime),
-                SimpleDateFormat.getDateTimeInstance().format(event.endTime)
-            )
+            itemView.startDateTextView.text = Utils.getDateFormat(event.startTime, false)
+            itemView.startTimeTextView.text = Utils.getTimeFormat(event.startTime)
+            itemView.endDateTextView.text = Utils.getDateFormat(event.endTime, false)
+            itemView.endTimeTextView.text = Utils.getTimeFormat(event.endTime)
+        }
+
+        private fun bindActions(event: Event) {
+            if (account!!.calendars[event.calendarId]!!.isEditable()) {
+                itemView.editImgView.visibility = View.VISIBLE
+                itemView.deleteImgView.visibility = View.VISIBLE
+            } else {
+                itemView.editImgView.visibility = View.INVISIBLE
+                itemView.deleteImgView.visibility = View.INVISIBLE
+            }
         }
     }
 }
