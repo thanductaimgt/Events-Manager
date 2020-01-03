@@ -29,6 +29,17 @@
             android:background="@drawable/shape_round"
             android:padding="8dp"
             android:src="@drawable/check"
+            app:layout_constraintEnd_toStartOf="@id/deleteImgView"
+            app:layout_constraintTop_toTopOf="@id/cancelImgView" />
+
+        <ImageView
+            android:id="@+id/deleteImgView"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/shape_round"
+            android:padding="8dp"
+            android:src="@drawable/delete_transparent"
             app:layout_constraintEnd_toStartOf="@id/cancelImgView"
             app:layout_constraintTop_toTopOf="@id/cancelImgView" />
 

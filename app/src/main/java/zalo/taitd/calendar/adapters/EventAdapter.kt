@@ -1,12 +1,14 @@
 package zalo.taitd.calendar.adapters
 
-import android.provider.CalendarContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_event.view.*
+import zalo.taitd.calendar.MainActivity
 import zalo.taitd.calendar.R
 import zalo.taitd.calendar.models.Account
 import zalo.taitd.calendar.models.Event
@@ -47,6 +49,7 @@ class EventAdapter(eventDiffUtil: EventDiffUtil) :
                     Event.PAYLOAD_TITLE -> holder.bindTitle(event)
                     Event.PAYLOAD_TIME -> holder.bindTime(event)
                     Event.PAYLOAD_LOCATION -> holder.bindLocation(event)
+                    Event.PAYLOAD_SELECT_STATE -> holder.bindSelectState(event)
                 }
             }
         } else {
@@ -66,11 +69,13 @@ class EventAdapter(eventDiffUtil: EventDiffUtil) :
             bindTitle(event)
             bindTime(event)
             bindLocation(event)
-            bindActions(event)
+            bindSelectState(event)
 
             itemView.apply {
                 editImgView.setOnClickListener(context as View.OnClickListener)
                 deleteImgView.setOnClickListener(context as View.OnClickListener)
+                itemEvent.setOnClickListener(context as View.OnClickListener)
+                itemEvent.setOnLongClickListener(context as View.OnLongClickListener)
             }
         }
 
@@ -106,6 +111,21 @@ class EventAdapter(eventDiffUtil: EventDiffUtil) :
             } else {
                 itemView.editImgView.visibility = View.INVISIBLE
                 itemView.deleteImgView.visibility = View.INVISIBLE
+            }
+        }
+
+        fun bindSelectState(event: Event) {
+            (itemView as CardView).apply {
+                val indexOfDownloadTask =
+                    (context as MainActivity).selectedEventsId.indexOfFirst { it == event.id }
+                if (indexOfDownloadTask != -1) {//contains
+                    setCardBackgroundColor(ContextCompat.getColor(context, R.color.lightAccent))
+                    editImgView.visibility = View.INVISIBLE
+                    deleteImgView.visibility = View.INVISIBLE
+                } else {
+                    setCardBackgroundColor(ContextCompat.getColor(context, android.R.color.white))
+                    bindActions(event)
+                }
             }
         }
     }

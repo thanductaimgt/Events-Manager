@@ -26,17 +26,21 @@ import zalo.taitd.calendar.models.Event
 import zalo.taitd.calendar.utils.TAG
 import zalo.taitd.calendar.utils.Utils
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
     View.OnClickListener {
-    private lateinit var originalEvent: Event
+    var originalEvent: Event? = null
     private lateinit var editedEvent: Event
-    private var isEditing = false
-    private var isEdit = false
-    private var isEditable = false
+
+    private var session: Session = Session.SESSION_VIEW
+    private var isEditable = true
+
     private val startCalendar = Calendar.getInstance()
     private val endCalendar = Calendar.getInstance()
+
+    private lateinit var confirmDeleteEventsDialog: ConfirmDeleteEventsDialog
 
     override fun onStart() {
         super.onStart()
@@ -80,8 +84,25 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         // dialog full screen
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        startCalendar.time = originalEvent.startTime
-        endCalendar.time = originalEvent.endTime
+        confirmDeleteEventsDialog = ConfirmDeleteEventsDialog(childFragmentManager)
+
+        initState()
+
+        if (!isEditable || session == Session.SESSION_CREATE) {
+            deleteImgView.visibility = View.GONE
+        }
+
+        cancelImgView.setOnClickListener(this)
+        saveImgView.setOnClickListener(this)
+        editImgView.setOnClickListener(this)
+        deleteImgView.setOnClickListener(this)
+        chooseStartDateTimeImgView.setOnClickListener(this)
+        chooseEndDateTimeImgView.setOnClickListener(this)
+    }
+
+    private fun initState(){
+        startCalendar.time = originalEvent!!.startTime
+        endCalendar.time = originalEvent!!.endTime
 
         startDateTV.text = Utils.getDateFormat(startCalendar.time)
         startTimeTV.text = Utils.getTimeFormat(startCalendar.time)
@@ -89,91 +110,99 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         endDateTV.text = Utils.getDateFormat(endCalendar.time)
         endTimeTV.text = Utils.getTimeFormat(endCalendar.time)
 
-        titleEditText.setText(originalEvent.title)
-        locationEditText.setText(originalEvent.location)
-        descEditText.setText(originalEvent.description)
+        titleEditText.setText(originalEvent!!.title)
+        locationEditText.setText(originalEvent!!.location)
+        descEditText.setText(originalEvent!!.description)
 
-        hostTextView.text = originalEvent.accountName
-
-        if (isEditing) {
-            enableEdit()
-        } else {
-            disableEdit()
-        }
-
-        cancelImgView.setOnClickListener(this)
-        saveImgView.setOnClickListener(this)
-        if (isEditable) {
-            editImgView.setOnClickListener(this)
-        } else {
-            editImgView.visibility = View.INVISIBLE
-        }
+        hostTextView.text = originalEvent!!.accountName
 
         warningTextView.visibility = View.GONE
 
-        chooseStartDateTimeImgView.setOnClickListener(this)
-        chooseEndDateTimeImgView.setOnClickListener(this)
+        if (isEditable) {
+            if (session == Session.SESSION_VIEW) {
+                disableEdit()
+            } else {
+                enableEdit()
+            }
+        } else {
+            disableEdit()
+
+            editImgView.visibility = View.GONE
+        }
     }
 
-    fun show(event: Event, isEdit: Boolean, isEditable: Boolean = true) {
+    private fun isEditing():Boolean{
+        return titleEditText.isEnabled
+    }
+
+    fun show(event: Event, session: Session, isEditable: Boolean = true) {
         this.originalEvent = event
         this.editedEvent = event.copy()
-        this.isEdit = isEdit
+        this.session = session
         this.isEditable = isEditable
-        this.isEditing = isEdit
 
-        if (dialog != null && dialog!!.isShowing) {
-            initView()
+        if (isShown()) {
+            initState()
         } else {
             show(fm, TAG)
         }
     }
 
+    fun isShown(): Boolean {
+        return dialog != null && dialog!!.isShowing
+    }
+
+    fun isCreateSession(): Boolean {
+        return session == Session.SESSION_CREATE
+    }
+
     override fun onClick(p0: View?) {
         when (p0!!.id) {
             R.id.cancelImgView -> {
-                if (originalEvent.id == null || isEdit || !isEditing) {
+                if (session == Session.SESSION_CREATE || session == Session.SESSION_EDIT || !isEditing()) {
                     dismiss()
                 } else {
-                    initView()
-                    disableEdit()
-                    isEditing = false
+//                    initView()
+                    initState()
                 }
             }
             R.id.editImgView -> {
                 enableEdit()
-                isEditing = !isEditing
             }
             R.id.saveImgView -> {
-                if (warningTextView.visibility == View.VISIBLE) {
-                    warningTextView.animate()
-                        .translationX(16f).interpolator = CycleInterpolator(7f)
+                if (isWarning()) {
+                    shakeWarningText()
                 } else {
-                    if (originalEvent.id == null) {
+                    if (session == Session.SESSION_CREATE) {
                         createEvent()
+
                         Toast.makeText(
                             context,
                             getString(R.string.event_created),
                             Toast.LENGTH_SHORT
-                        )
-                            .show()
+                        ).show()
+
                         dismiss()
                     } else {
                         updateEvent()
-                        disableEdit()
-                        isEditing = false
+
                         Toast.makeText(
                             context,
                             getString(R.string.event_edited),
                             Toast.LENGTH_SHORT
-                        )
-                            .show()
-                        if (isEdit) {
+                        ).show()
+
+                        if (session == Session.SESSION_EDIT) {
                             dismiss()
+                        }else{
+                            disableEdit()
                         }
                     }
                     (context as MainActivity).getData()
                 }
+            }
+            R.id.deleteImgView -> {
+                confirmDeleteEventsDialog.show(ArrayList<Long>().apply { add(originalEvent!!.id!!) })
             }
             R.id.chooseStartDateTimeImgView -> showDatePickerDialog(
                 isStart = true,
@@ -190,6 +219,15 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         }
     }
 
+    private fun isWarning():Boolean{
+        return warningTextView.visibility == View.VISIBLE
+    }
+
+    private fun shakeWarningText(){
+        warningTextView.animate()
+            .translationX(16f).interpolator = CycleInterpolator(7f)
+    }
+
     private fun getCurrentValues(): ContentValues {
         return ContentValues().apply {
             put(CalendarContract.Events.TITLE, titleEditText.text.toString())
@@ -204,7 +242,7 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         val values = getCurrentValues().apply {
             put(
                 CalendarContract.Events.CALENDAR_ID,
-                originalEvent.calendarId
+                originalEvent!!.calendarId
             )
             put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().displayName)
         }
@@ -214,7 +252,7 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
     private fun updateEvent() {
         val values = getCurrentValues()
         val updateUri =
-            ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, originalEvent.id!!)
+            ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, originalEvent!!.id!!)
         context!!.contentResolver.update(updateUri, values, null, null)
     }
 
@@ -336,5 +374,11 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
         ).show()
+    }
+
+    enum class Session {
+        SESSION_CREATE,
+        SESSION_EDIT,
+        SESSION_VIEW
     }
 }

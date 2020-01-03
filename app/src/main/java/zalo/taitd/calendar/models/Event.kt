@@ -16,5 +16,6 @@ data class Event(
         const val PAYLOAD_TITLE = 0
         const val PAYLOAD_LOCATION = 1
         const val PAYLOAD_TIME = 2
+        const val PAYLOAD_SELECT_STATE = 3
     }
 }

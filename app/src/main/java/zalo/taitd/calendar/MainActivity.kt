@@ -30,9 +30,12 @@ import zalo.taitd.calendar.utils.EventDiffUtil
 import zalo.taitd.calendar.utils.TAG
 import android.view.MenuItem
 import zalo.taitd.calendar.fragments.ConfirmDeleteEventsDialog
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
-class MainActivity : AppCompatActivity(), View.OnClickListener {
+class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClickListener {
     private val compositeDisposable = CompositeDisposable()
     private val adapter = EventAdapter(EventDiffUtil())
     private lateinit var accounts: HashMap<String, Account>
@@ -41,6 +44,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var popupMenu: PopupMenu
     private var curAccountEvents: List<Event> = ArrayList()
     private lateinit var confirmDeleteEventsDialog: ConfirmDeleteEventsDialog
+    val selectedEventsId = LinkedList<Long>()
 
     private val permissionsId = arrayOf(
         Manifest.permission.READ_CALENDAR,
@@ -58,7 +62,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun viewEventIfStartFromNotification(intent: Intent){
+    private fun viewEventIfStartFromNotification(intent: Intent) {
         if (intent.action == Constants.ACTION_VIEW_EVENT) {
             val eventId = intent.getLongExtra(Constants.EXTRA_EVENT_ID, -1)
             if (eventId != -1L) {
@@ -115,6 +119,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         initAccountSpinner()
         initChooseCalendarMenu()
+        initSelectLayout()
 
         confirmDeleteEventsDialog = ConfirmDeleteEventsDialog(supportFragmentManager)
 
@@ -123,6 +128,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         addEventImgView.setOnClickListener(this)
         refreshImgView.setOnClickListener(this)
         chooseCalendarsImgView.setOnClickListener(this)
+    }
+
+    private fun initSelectLayout() {
+        selectAllImgView.setOnClickListener(this)
+        discardAllImgView.setOnClickListener(this)
+        deleteAllImgView.setOnClickListener(this)
     }
 
     private fun initAccountSpinner() {
@@ -141,6 +152,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     position: Int,
                     id: Long
                 ) {
+                    deselectAllEvents()
+
                     curAccountName = spinnerAdapter.getItem(position)
                     SharePreferenceManager.setCurAccount(this@MainActivity, curAccountName!!)
 
@@ -153,7 +166,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
     }
 
-    private fun initChooseCalendarMenu(){
+    private fun initChooseCalendarMenu() {
         popupMenu = PopupMenu(this, chooseCalendarsImgView)
 
         //registering popup with OnMenuItemClickListener
@@ -161,7 +174,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             val calendarId = menuItem.itemId.toLong()
 
             if (menuItem.isChecked) {
-                adapter.updateEvents(adapter.currentList.filter { it.calendarId != calendarId })
+                val eventsIdToBeRemoved = adapter.currentList.filter { it.calendarId == calendarId }
+                deselectEvents(eventsIdToBeRemoved.map { it.id!! })
+
+                adapter.updateEvents(adapter.currentList.toMutableList().apply {
+                    removeAll(
+                        eventsIdToBeRemoved
+                    )
+                })
 
                 SharePreferenceManager.addCalendarToAccExcludedCalendars(
                     this,
@@ -215,7 +235,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     calendarId = getAccountPrimaryCalendarId(curAccountName!!)
                 )
 
-                viewEventDialog.show(event, true)
+                viewEventDialog.show(event, ViewEventDialog.Session.SESSION_CREATE)
             }
             R.id.itemEvent -> {
 //                val position = recyclerView.getChildLayoutPosition(view)
@@ -225,13 +245,24 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 //                    ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId)
 //                val intent = Intent(Intent.ACTION_VIEW).setData(uri)
 //                startActivity(intent)
-
                 val position = recyclerView.getChildLayoutPosition(view)
                 val event = adapter.currentList[position]
 
-                val isEditable =
-                    accounts[curAccountName!!]!!.calendars[event.calendarId]!!.isEditable()
-                viewEventDialog.show(event, false, isEditable)
+                if (selectedEventsId.isEmpty()) {
+                    val isEditable =
+                        accounts[curAccountName!!]!!.calendars[event.calendarId]!!.isEditable()
+                    viewEventDialog.show(event, ViewEventDialog.Session.SESSION_VIEW, isEditable)
+                } else {
+                    if (accounts[curAccountName!!]!!.calendars[event.calendarId]!!.isEditable()) {
+                        selectOrDeselectEvent(position)
+                    } else {
+                        Toast.makeText(
+                            this,
+                            getString(R.string.cannot_perform_action),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
             }
             R.id.refreshImgView -> {
                 swipeRefresh.isRefreshing = true
@@ -247,7 +278,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 val position = recyclerView.getChildLayoutPosition(view.parent.parent as View)
                 val event = adapter.currentList[position]
 
-                viewEventDialog.show(event, true)
+                viewEventDialog.show(event, ViewEventDialog.Session.SESSION_EDIT)
             }
             R.id.deleteImgView -> {
                 val position = recyclerView.getChildLayoutPosition(view.parent.parent as View)
@@ -257,6 +288,91 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
             R.id.chooseCalendarsImgView -> {
                 showChooseCalendarsMenu()
+            }
+            R.id.deleteAllImgView -> {
+                confirmDeleteEventsDialog.show(selectedEventsId)
+            }
+            R.id.discardAllImgView -> {
+                deselectAllEvents()
+            }
+            R.id.selectAllImgView -> {
+                selectAllEvents()
+            }
+        }
+    }
+
+    override fun onLongClick(view: View): Boolean {
+        when (view.id) {
+            R.id.itemEvent -> {
+                val position = recyclerView.getChildLayoutPosition(view)
+                val event = adapter.currentList[position]
+                if (accounts[curAccountName!!]!!.calendars[event.calendarId]!!.isEditable()) {
+                    selectOrDeselectEvent(position)
+                } else {
+                    Toast.makeText(
+                        this,
+                        getString(R.string.cannot_perform_action),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun selectOrDeselectEvent(position: Int) {
+        val event = adapter.currentList[position]
+        // if selectedEvents not contains event ...
+        if (!selectedEventsId.removeAll { it == event.id }) {
+            selectedEventsId.add(event.id!!)
+        }
+        updateSelectLayout()
+        adapter.notifyItemChanged(
+            position,
+            ArrayList<Int>().apply { add(Event.PAYLOAD_SELECT_STATE) })
+    }
+
+    private fun deselectEvents(eventIds: List<Long>) {
+        selectedEventsId.removeAll(eventIds)
+        updateSelectLayout()
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun deselectAllEvents() {
+        selectedEventsId.clear()
+        updateSelectLayout()
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun selectAllEvents() {
+        selectedEventsId.addAll(adapter.currentList.map { it.id!! })
+        updateSelectLayout()
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun updateSelectLayout() {
+        if (selectedEventsId.isEmpty()) {
+            hideSelectLayout()
+        } else {
+            selectCountTextView.text =
+                String.format("${getString(R.string.selected)}: %d", selectedEventsId.size)
+            showSelectLayout()
+        }
+    }
+
+    private fun showSelectLayout() {
+        selectLayout.apply {
+            if (visibility == View.GONE) {
+                visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun hideSelectLayout() {
+        selectLayout.apply {
+            if (visibility == View.VISIBLE) {
+                visibility = View.GONE
             }
         }
     }
@@ -372,7 +488,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     inner class GetEventObserver : SingleObserver<Event> {
         override fun onSuccess(t: Event) {
             val isEditable = accounts[t.accountName]!!.calendars[t.calendarId]!!.isEditable()
-            viewEventDialog.show(t, false, isEditable)
+            viewEventDialog.show(t, ViewEventDialog.Session.SESSION_VIEW, isEditable)
         }
 
         override fun onSubscribe(d: Disposable) {
@@ -414,7 +530,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 Toast.LENGTH_SHORT
             ).show()
 
+            deselectEvents(eventsId)
             getData()
+
+            if (!viewEventDialog.isCreateSession() &&
+                eventsId.contains(viewEventDialog.originalEvent!!.id) &&
+                viewEventDialog.isShown()) {
+                viewEventDialog.dismiss()
+            }
         }
 
         override fun onSubscribe(d: Disposable) {
@@ -423,6 +546,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         override fun onError(e: Throwable) {
             e.printStackTrace()
+            deselectEvents(eventsId)
         }
     }
 }

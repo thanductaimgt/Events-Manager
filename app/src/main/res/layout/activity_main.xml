@@ -9,7 +9,7 @@
     <Spinner
         android:id="@+id/spinner"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:layout_marginTop="16dp"
         android:background="@drawable/shape_round_corners_stroke"
         android:padding="6dp"
@@ -40,7 +40,7 @@
         android:padding="8dp"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
-        android:text="@string/your_calendars"
+        android:text="@string/your_events"
         android:textColor="@android:color/white"
         android:textSize="@dimen/sizeTextTitle"
         android:textStyle="bold"
@@ -48,23 +48,22 @@
 
     <ImageView
         android:id="@+id/chooseCalendarsImgView"
-        android:padding="4dp"
-        android:layout_marginEnd="4dp"
-        app:layout_constraintBottom_toBottomOf="@id/titleTextView"
-        app:layout_constraintTop_toTopOf="@id/titleTextView"
-        app:layout_constraintEnd_toEndOf="@id/titleTextView"
-        android:src="@drawable/check_list"
-        android:layout_width="30dp"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintDimensionRatio="1:1"/>
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="6dp"
+        android:src="@drawable/check_list"
+        app:layout_constraintBottom_toBottomOf="@id/titleTextView"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@id/titleTextView"
+        app:layout_constraintTop_toTopOf="@id/titleTextView" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleTextView"
+        app:layout_constraintTop_toBottomOf="@id/line"
         app:layout_constraintVertical_bias="0.0"
         tools:layout_editor_absoluteX="0dp">
 
@@ -75,24 +74,92 @@
             android:background="@color/lightWeakGray"
             android:clipToPadding="false"
             android:paddingStart="8dp"
-            android:paddingTop="16dp"
+            android:paddingTop="24dp"
             android:paddingEnd="8dp"
-            android:paddingBottom="148dp"
+            android:paddingBottom="156dp"
             tools:listitem="@layout/item_event" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <View
+        android:id="@+id/line"
         android:layout_width="match_parent"
         android:layout_height="1dp"
+        android:layout_marginTop="24dp"
         android:background="@color/lightMediumGray"
-        app:layout_constraintTop_toTopOf="@id/swipeRefresh" />
+        app:layout_constraintTop_toBottomOf="@id/titleTextView" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        tools:visibility="visible"
+        android:id="@+id/selectLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@android:color/white"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/titleTextView">
+
+        <TextView
+            android:id="@+id/selectCountTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:textColor="@color/actionText"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/selectAllImgView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Đã chọn: 2" />
+
+        <ImageView
+            android:id="@+id/deleteAllImgView"
+            android:layout_width="36dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="10dp"
+            android:src="@drawable/delete"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/discardAllImgView"
+            android:layout_width="36dp"
+            android:layout_height="0dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@drawable/discard_all"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toStartOf="@id/deleteAllImgView"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/selectAllImgView"
+            android:layout_width="36dp"
+            android:layout_height="0dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@drawable/select_all"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toStartOf="@id/discardAllImgView"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/line2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/lightMediumGray"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageView
         android:id="@+id/arrowUpImgView"
-        android:layout_width="25dp"
+        android:layout_width="33dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/refresh"
+        android:padding="4dp"
         android:src="@drawable/arrow_up"
         app:layout_constraintBottom_toTopOf="@id/arrowDownImgView"
         app:layout_constraintDimensionRatio="1:1"
@@ -100,10 +167,11 @@
 
     <ImageView
         android:id="@+id/arrowDownImgView"
-        android:layout_width="25dp"
+        android:layout_width="33dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/refresh"
+        android:padding="4dp"
         android:src="@drawable/arrow_down"
         app:layout_constraintBottom_toTopOf="@id/refreshImgView"
         app:layout_constraintDimensionRatio="1:1"
@@ -111,20 +179,24 @@
 
     <ImageView
         android:id="@+id/refreshImgView"
-        android:layout_width="30dp"
+        android:layout_width="38dp"
         android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/refresh"
+        android:padding="4dp"
         android:src="@drawable/refresh"
         app:layout_constraintBottom_toTopOf="@id/addEventImgView"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="@id/addEventImgView" />
 
     <ImageView
+        android:layout_marginBottom="4dp"
+        android:layout_marginEnd="4dp"
         android:id="@+id/addEventImgView"
-        android:layout_width="40dp"
+        android:layout_width="48dp"
         android:layout_height="0dp"
-        android:layout_margin="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="4dp"
         android:src="@drawable/add"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:1"

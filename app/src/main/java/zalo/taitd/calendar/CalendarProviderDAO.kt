@@ -189,8 +189,18 @@ object CalendarProviderDAO {
     }
 
     private fun deleteEventsSync(context: Context, eventsId: List<Long>) {
-        val where = "(${CalendarContract.Events._ID} == ?)"
         val selectionArgs: Array<String?> = eventsId.map { it.toString() }.toTypedArray()
+
+        val inList = StringBuilder(selectionArgs.size * 2)
+
+        for (i in selectionArgs.indices) {
+            if (i > 0) {
+                inList.append(",")
+            }
+            inList.append("?")
+        }
+
+        val where = "(${CalendarContract.Events._ID} IN ($inList))"
 
         val eventTableUri: Uri = CalendarContract.Events.CONTENT_URI
         context.contentResolver.delete(eventTableUri, where, selectionArgs)

@@ -37,19 +37,21 @@ class RemindService : IntentService(RemindService::class.java.simpleName) {
         }
     }
 
-    private fun remindEventsWithAlertTime(alertTime:String){
+    private fun remindEventsWithAlertTime(alertTime: String) {
         Log.d(TAG, "remindEventsWithAlertTime: $alertTime")
         val selection = CalendarContract.CalendarAlerts.ALARM_TIME + "=?"
-        with(contentResolver.query(
-            CalendarContract.CalendarAlerts.CONTENT_URI_BY_INSTANCE,
-            arrayOf(
-                CalendarContract.CalendarAlerts.EVENT_ID
-            ),
-            selection,
-            arrayOf(alertTime),
-            null
-        )) {
-            if (this==null){
+        with(
+            contentResolver.query(
+                CalendarContract.CalendarAlerts.CONTENT_URI_BY_INSTANCE,
+                arrayOf(
+                    CalendarContract.CalendarAlerts.EVENT_ID
+                ),
+                selection,
+                arrayOf(alertTime),
+                null
+            )
+        ) {
+            if (this == null) {
                 Log.d(TAG, "cursor is null")
                 return
             }
@@ -61,7 +63,7 @@ class RemindService : IntentService(RemindService::class.java.simpleName) {
         }
     }
 
-    private fun remindEvent(eventId:Long){
+    private fun remindEvent(eventId: Long) {
         Log.d(TAG, "remindEvent: $eventId")
 
         val event = CalendarProviderDAO.getEventSync(this, eventId)
@@ -92,7 +94,7 @@ class RemindService : IntentService(RemindService::class.java.simpleName) {
             .setSmallIcon(R.drawable.app_icon_transparent)
             .setTicker(this.getString(R.string.app_name))
             .setContentTitle(getNotificationTitle())
-            .setContentText(event.title)
+            .setContentText(if (event.title != "") event.title else "(${getString(R.string.no_title)})")
             .setStyle(NotificationCompat.BigTextStyle().bigText(notificationTextFormat))
             .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
             .setDefaults(Notification.DEFAULT_SOUND)
