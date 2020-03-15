@@ -11,4 +11,6 @@ object Constants {
 
     const val ACTION_VIEW_EVENT = "zalo.taitd.calendar.ACTION_VIEW_EVENT"
     const val EXTRA_EVENT_ID = "EXTRA_EVENT_ID"
+
+    const val RRULE_REPEAT_DAILY = "FREQ=DAILY"
 }

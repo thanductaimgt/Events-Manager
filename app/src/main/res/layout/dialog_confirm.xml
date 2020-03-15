@@ -15,8 +15,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <TextView
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
                 android:textStyle="bold"
                 android:textSize="@dimen/sizeTextTitle"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -31,11 +31,9 @@
                 />
 
             <TextView
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
                 android:layout_marginTop="2dp"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/titleTextView"
+                app:layout_constraintStart_toStartOf="@id/titleTextView"
                 android:id="@+id/descTextView"
                 app:layout_constraintTop_toBottomOf="@id/titleTextView"
                 android:layout_width="0dp"

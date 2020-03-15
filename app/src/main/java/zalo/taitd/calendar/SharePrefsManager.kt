@@ -3,7 +3,7 @@ package zalo.taitd.calendar
 import android.content.Context
 import android.content.SharedPreferences
 
-object SharePreferenceManager {
+object SharePrefsManager {
     private const val SHARE_PREFS_NAME = "Events Manager Share Preferences"
     private const val CUR_ACCOUNT_KEY = "CUR_ACCOUNT_KEY"
     private const val ACC_EXCLUDED_CALENDARS_ID_PREFIX = "ACCOUNT_CALENDARS_ID_PREFIX_"

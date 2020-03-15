@@ -98,10 +98,18 @@ class EventAdapter(eventDiffUtil: EventDiffUtil) :
         }
 
         fun bindTime(event: Event) {
-            itemView.startDateTextView.text = Utils.getDateFormat(event.startTime, false)
-            itemView.startTimeTextView.text = Utils.getTimeFormat(event.startTime)
-            itemView.endDateTextView.text = Utils.getDateFormat(event.endTime, false)
-            itemView.endTimeTextView.text = Utils.getTimeFormat(event.endTime)
+            itemView.apply {
+                startDateTextView.text = Utils.getDateFormat(event.startTime, false)
+                startTimeTextView.text = Utils.getTimeFormat(event.startTime)
+                endDateTextView.text = Utils.getDateFormat(event.endTime, false)
+                endTimeTextView.text = Utils.getTimeFormat(event.endTime)
+
+                repeatDailyTV.visibility = if (event.isRepeatDaily) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
+            }
         }
 
         private fun bindActions(event: Event) {

@@ -4,19 +4,18 @@ import android.content.Context
 import zalo.taitd.calendar.R
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.*
 
 object Utils {
-    fun getTimeFormat(date: Date): String {
-        return SimpleDateFormat.getTimeInstance(DateFormat.SHORT).format(date)
+    fun getTimeFormat(milli:Long): String {
+        return SimpleDateFormat.getTimeInstance(DateFormat.SHORT).format(milli)
     }
 
-    fun getDateFormat(date: Date, isLong:Boolean=true): String {
-        return SimpleDateFormat.getDateInstance(if(isLong) DateFormat.FULL else DateFormat.DEFAULT).format(date)
+    fun getDateFormat(milli:Long, isLong:Boolean=true): String {
+        return SimpleDateFormat.getDateInstance(if(isLong) DateFormat.FULL else DateFormat.DEFAULT).format(milli)
     }
 
-    fun getDateTimeDiffFormat(context: Context, date: Date, now: Date = Date()): String {
-        val diffByMillisecond = date.time - now.time
+    fun getDateTimeDiffFormat(context: Context, milli:Long, now: Long = System.currentTimeMillis()): String {
+        val diffByMillisecond = milli - now
         return if (diffByMillisecond > 0) getFutureDateTimeDiffFormat(
             context,
             diffByMillisecond

@@ -36,4 +36,5 @@
     <string name="selected">Đã chọn</string>
     <string name="cannot_perform_action">Không thể chọn xóa sự kiện này</string>
     <string name="start_time_can_not_exceed_end_time">Thời gian bắt đầu không được sau thời gian kết thúc</string>
+    <string name="repeat_daily">Lặp lại hằng ngày</string>
 </resources>

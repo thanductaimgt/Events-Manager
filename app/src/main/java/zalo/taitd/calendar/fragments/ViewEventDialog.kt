@@ -1,5 +1,6 @@
 package zalo.taitd.calendar.fragments
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.app.TimePickerDialog
@@ -23,6 +24,7 @@ import kotlinx.android.synthetic.main.dialog_view_event.*
 import zalo.taitd.calendar.MainActivity
 import zalo.taitd.calendar.R
 import zalo.taitd.calendar.models.Event
+import zalo.taitd.calendar.utils.Constants
 import zalo.taitd.calendar.utils.TAG
 import zalo.taitd.calendar.utils.Utils
 import java.util.*
@@ -54,6 +56,7 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         editedEvent.title = titleEditText.text.toString()
         editedEvent.location = locationEditText.text.toString()
         editedEvent.description = descEditText.text.toString()
+        editedEvent.isRepeatDaily = repeatDailyCheckBox.isChecked
         super.onPause()
     }
 
@@ -61,6 +64,7 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         titleEditText.setText(editedEvent.title)
         locationEditText.setText(editedEvent.location)
         descEditText.setText(editedEvent.description)
+        repeatDailyCheckBox.isChecked = editedEvent.isRepeatDaily
         super.onResume()
     }
 
@@ -100,15 +104,15 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         chooseEndDateTimeImgView.setOnClickListener(this)
     }
 
-    private fun initState(){
-        startCalendar.time = originalEvent!!.startTime
-        endCalendar.time = originalEvent!!.endTime
+    private fun initState() {
+        startCalendar.timeInMillis = originalEvent!!.startTime
+        endCalendar.timeInMillis = originalEvent!!.endTime
 
-        startDateTV.text = Utils.getDateFormat(startCalendar.time)
-        startTimeTV.text = Utils.getTimeFormat(startCalendar.time)
+        startDateTV.text = Utils.getDateFormat(startCalendar.timeInMillis)
+        startTimeTV.text = Utils.getTimeFormat(startCalendar.timeInMillis)
 
-        endDateTV.text = Utils.getDateFormat(endCalendar.time)
-        endTimeTV.text = Utils.getTimeFormat(endCalendar.time)
+        endDateTV.text = Utils.getDateFormat(endCalendar.timeInMillis)
+        endTimeTV.text = Utils.getTimeFormat(endCalendar.timeInMillis)
 
         titleEditText.setText(originalEvent!!.title)
         locationEditText.setText(originalEvent!!.location)
@@ -131,7 +135,7 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         }
     }
 
-    private fun isEditing():Boolean{
+    private fun isEditing(): Boolean {
         return titleEditText.isEnabled
     }
 
@@ -194,7 +198,7 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
 
                         if (session == Session.SESSION_EDIT) {
                             dismiss()
-                        }else{
+                        } else {
                             disableEdit()
                         }
                     }
@@ -216,14 +220,17 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
             R.id.startTimeTV -> showTimePickerDialog(isStart = true)
             R.id.endDateTV -> showDatePickerDialog(isStart = false, isPickBoth = false)
             R.id.endTimeTV -> showTimePickerDialog(isStart = false)
+            R.id.repeatDailyTV -> {
+                repeatDailyCheckBox.isChecked = !repeatDailyCheckBox.isChecked
+            }
         }
     }
 
-    private fun isWarning():Boolean{
+    private fun isWarning(): Boolean {
         return warningTextView.visibility == View.VISIBLE
     }
 
-    private fun shakeWarningText(){
+    private fun shakeWarningText() {
         warningTextView.animate()
             .translationX(16f).interpolator = CycleInterpolator(7f)
     }
@@ -231,13 +238,24 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
     private fun getCurrentValues(): ContentValues {
         return ContentValues().apply {
             put(CalendarContract.Events.TITLE, titleEditText.text.toString())
-            put(CalendarContract.Events.DTSTART, startCalendar.time.time)
-            put(CalendarContract.Events.DTEND, endCalendar.time.time)
+            put(CalendarContract.Events.DTSTART, startCalendar.timeInMillis)
+            put(CalendarContract.Events.DTEND, endCalendar.timeInMillis)
             put(CalendarContract.Events.EVENT_LOCATION, locationEditText.text.toString())
             put(CalendarContract.Events.DESCRIPTION, descEditText.text.toString())
+
+            val nullLong: Long? = null
+            put(CalendarContract.Events.DURATION, nullLong)
+
+            if (repeatDailyCheckBox.isChecked) {
+                put(CalendarContract.Events.RRULE, Constants.RRULE_REPEAT_DAILY)
+            } else {
+                val nullString: String? = null
+                put(CalendarContract.Events.RRULE, nullString)
+            }
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun createEvent() {
         val values = getCurrentValues().apply {
             put(
@@ -254,6 +272,9 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         val updateUri =
             ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, originalEvent!!.id!!)
         context!!.contentResolver.update(updateUri, values, null, null)
+
+        originalEvent = editedEvent
+        editedEvent = editedEvent.copy()
     }
 
     private fun enableEdit() {
@@ -267,6 +288,9 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         chooseStartDateTimeImgView.visibility = View.VISIBLE
         chooseEndDateTimeImgView.visibility = View.VISIBLE
 
+        repeatDailyCheckBox.visibility = View.VISIBLE
+        repeatDailyTV.visibility = View.VISIBLE
+
         val editTextBackground =
             ContextCompat.getDrawable(context!!, R.drawable.shape_round_corners_gray)
 
@@ -279,6 +303,8 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
 
         endDateTV.setOnClickListener(this)
         endTimeTV.setOnClickListener(this)
+
+        repeatDailyTV.setOnClickListener(this)
     }
 
     private fun disableEdit() {
@@ -292,6 +318,13 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
         chooseStartDateTimeImgView.visibility = View.INVISIBLE
         chooseEndDateTimeImgView.visibility = View.INVISIBLE
 
+        if (originalEvent!!.isRepeatDaily) {
+            repeatDailyTV.visibility = View.VISIBLE
+            repeatDailyCheckBox.visibility = View.INVISIBLE
+        } else {
+            repeatDailyCheckBox.visibility = View.GONE
+        }
+
         val editTextBackground =
             ContextCompat.getDrawable(context!!, R.drawable.shape_padding_trans)
 
@@ -304,11 +337,21 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
 
         endDateTV.setOnClickListener(null)
         endTimeTV.setOnClickListener(null)
+
+        repeatDailyTV.setOnClickListener(null)
     }
 
-    private fun checkStartTimeEndTime() {
+    private fun checkStartTimeEndTime(isStart: Boolean) {
         if (startCalendar.timeInMillis > endCalendar.timeInMillis) {
-            warningTextView.visibility = View.VISIBLE
+            if (isStart) {
+                endCalendar.timeInMillis =
+                    startCalendar.timeInMillis + Constants.ONE_HOUR_IN_MILLISECOND
+                endDateTV.text = Utils.getDateFormat(endCalendar.timeInMillis)
+                endTimeTV.text = Utils.getTimeFormat(endCalendar.timeInMillis)
+                warningTextView.visibility = View.GONE
+            } else {
+                warningTextView.visibility = View.VISIBLE
+            }
         } else {
             warningTextView.visibility = View.GONE
         }
@@ -333,9 +376,9 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
                     set(Calendar.HOUR_OF_DAY, hourOfDay)
                     set(Calendar.MINUTE, minute)
                 }
-                textView.text = Utils.getTimeFormat(calendar.time)
+                textView.text = Utils.getTimeFormat(calendar.timeInMillis)
 
-                checkStartTimeEndTime()
+                checkStartTimeEndTime(isStart)
             },
             calendar.get(Calendar.HOUR_OF_DAY),
             calendar.get(Calendar.MINUTE),
@@ -363,12 +406,12 @@ class ViewEventDialog(private val fm: FragmentManager) : DialogFragment(),
                     set(Calendar.MONTH, monthOfYear)
                     set(Calendar.YEAR, year)
                 }
-                textView.text = Utils.getDateFormat(calendar.time)
+                textView.text = Utils.getDateFormat(calendar.timeInMillis)
                 if (isPickBoth) {
                     showTimePickerDialog(isStart)
                 }
 
-                checkStartTimeEndTime()
+                checkStartTimeEndTime(isStart)
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),

@@ -15,12 +15,12 @@ import io.reactivex.schedulers.Schedulers
 import zalo.taitd.calendar.models.Account
 import zalo.taitd.calendar.models.Calendar
 import zalo.taitd.calendar.models.Event
+import zalo.taitd.calendar.utils.Constants
 import zalo.taitd.calendar.utils.TAG
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-object CalendarProviderDAO {
+object CalendarManager {
     private val eventProjection: Array<String> = arrayOf(
         CalendarContract.Events._ID,
         CalendarContract.Events.TITLE,
@@ -29,7 +29,8 @@ object CalendarProviderDAO {
         CalendarContract.Events.DTSTART,
         CalendarContract.Events.DTEND,
         CalendarContract.Events.ACCOUNT_NAME,
-        CalendarContract.Events.CALENDAR_ID
+        CalendarContract.Events.CALENDAR_ID,
+        CalendarContract.Events.RRULE
     )
 
     private val calendarProjection: Array<String> = arrayOf(
@@ -188,6 +189,7 @@ object CalendarProviderDAO {
             .let { completable -> observer?.let { completable.subscribe(observer) } }
     }
 
+    @SuppressLint("MissingPermission")
     private fun deleteEventsSync(context: Context, eventsId: List<Long>) {
         val selectionArgs: Array<String?> = eventsId.map { it.toString() }.toTypedArray()
 
@@ -214,14 +216,16 @@ object CalendarProviderDAO {
             cursor.getString(cursor.getColumnIndex(CalendarContract.Events.EVENT_LOCATION))
                 ?: ""
         val startTime =
-            Date(cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTSTART)))
-        val endTime = Date(cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTEND)))
+            cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTSTART))
+        val endTime = cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.DTEND))
         val accountName =
             cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ACCOUNT_NAME))
         val description =
             cursor.getString(cursor.getColumnIndex(CalendarContract.Events.DESCRIPTION)) ?: ""
         val calendarId =
             cursor.getLong(cursor.getColumnIndex(CalendarContract.Events.CALENDAR_ID))
+        val isRepeatDaily =
+            cursor.getString(cursor.getColumnIndex(CalendarContract.Events.RRULE))?.contains(Constants.RRULE_REPEAT_DAILY)?:false
 
         return Event(
             id,
@@ -231,7 +235,8 @@ object CalendarProviderDAO {
             startTime,
             endTime,
             accountName,
-            calendarId
+            calendarId,
+            isRepeatDaily
         )
     }
 }

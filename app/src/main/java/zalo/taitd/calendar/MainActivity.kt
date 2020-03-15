@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         if (intent.action == Constants.ACTION_VIEW_EVENT) {
             val eventId = intent.getLongExtra(Constants.EXTRA_EVENT_ID, -1)
             if (eventId != -1L) {
-                CalendarProviderDAO.getEventAsync(
+                CalendarManager.getEventAsync(
                     this@MainActivity,
                     GetEventObserver(),
                     eventId
@@ -94,13 +94,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
 
     fun getData() {
         if (curAccountName != null) {
-            CalendarProviderDAO.getEventsAsync(
+            CalendarManager.getEventsAsync(
                 this,
                 GetEventsObserver(),
                 curAccountName!!
             )
         } else {
-            CalendarProviderDAO.getAccountsAsync(this, GetAccountsObserver())
+            CalendarManager.getAccountsAsync(this, GetAccountsObserver())
         }
     }
 
@@ -155,9 +155,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
                     deselectAllEvents()
 
                     curAccountName = spinnerAdapter.getItem(position)
-                    SharePreferenceManager.setCurAccount(this@MainActivity, curAccountName!!)
+                    SharePrefsManager.setCurAccount(this@MainActivity, curAccountName!!)
 
-                    CalendarProviderDAO.getEventsAsync(
+                    CalendarManager.getEventsAsync(
                         this@MainActivity,
                         GetEventsObserver(),
                         curAccountName!!
@@ -183,7 +183,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
                     )
                 })
 
-                SharePreferenceManager.addCalendarToAccExcludedCalendars(
+                SharePrefsManager.addCalendarToAccExcludedCalendars(
                     this,
                     calendarId,
                     curAccountName!!
@@ -199,7 +199,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
                     }.sortedBy { it.startTime }
                 )
 
-                SharePreferenceManager.removeCalendarFromAccExcludedCalendars(
+                SharePrefsManager.removeCalendarFromAccExcludedCalendars(
                     this,
                     calendarId,
                     curAccountName!!
@@ -266,7 +266,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
             }
             R.id.refreshImgView -> {
                 swipeRefresh.isRefreshing = true
-                CalendarProviderDAO.getEventsAsync(
+                CalendarManager.getEventsAsync(
                     this,
                     GetEventsObserver(),
                     curAccountName!!
@@ -378,7 +378,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
     }
 
     fun deleteEvents(eventsId: List<Long>) {
-        CalendarProviderDAO.deleteEventsAsync(this, eventsId, DeleteEventsObserver(eventsId))
+        CalendarManager.deleteEventsAsync(this, eventsId, DeleteEventsObserver(eventsId))
     }
 
     override fun onDestroy() {
@@ -396,8 +396,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         val accountKeySorted = accounts.keys.sorted()
 
         curAccountName =
-            SharePreferenceManager.getCurAccountName(this) ?: accountKeySorted.firstOrNull()
-        SharePreferenceManager.setCurAccount(this@MainActivity, curAccountName!!)
+            SharePrefsManager.getCurAccountName(this) ?: accountKeySorted.firstOrNull()
+        SharePrefsManager.setCurAccount(this@MainActivity, curAccountName!!)
 
         val spinnerAdapter = (spinner.adapter as AccountSpinnerAdapter)
         spinnerAdapter.clear()
@@ -440,7 +440,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
 
     private fun showChooseCalendarsMenu() {
         val curAccountCalendars = accounts[curAccountName]!!.calendars
-        val exCalendarsId = SharePreferenceManager.getAccExcludedCalendarsId(this, curAccountName!!)
+        val exCalendarsId = SharePrefsManager.getAccExcludedCalendarsId(this, curAccountName!!)
 
         popupMenu.menu.removeGroup(0)
 
@@ -462,7 +462,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         override fun onSuccess(t: List<Event>) {
             curAccountEvents = t.sortedBy { it.startTime }
 
-            val exCalendarsId = SharePreferenceManager.getAccExcludedCalendarsId(
+            val exCalendarsId = SharePrefsManager.getAccExcludedCalendarsId(
                 this@MainActivity,
                 curAccountName!!
             )

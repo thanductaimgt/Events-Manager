@@ -1,10 +1,8 @@
 package zalo.taitd.calendar.services
 
 import android.app.*
-import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.provider.CalendarContract
 import android.provider.Settings
@@ -12,7 +10,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import zalo.taitd.calendar.R
-import zalo.taitd.calendar.CalendarProviderDAO
+import zalo.taitd.calendar.CalendarManager
 import zalo.taitd.calendar.MainActivity
 import zalo.taitd.calendar.models.Event
 import zalo.taitd.calendar.utils.Constants
@@ -66,7 +64,7 @@ class RemindService : IntentService(RemindService::class.java.simpleName) {
     private fun remindEvent(eventId: Long) {
         Log.d(TAG, "remindEvent: $eventId")
 
-        val event = CalendarProviderDAO.getEventSync(this, eventId)
+        val event = CalendarManager.getEventSync(this, eventId)
 
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             action = Constants.ACTION_VIEW_EVENT
